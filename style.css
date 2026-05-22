@@ -1,0 +1,848 @@
+:root {
+    --bg: #FAF8F2;
+    --grid-color: rgba(0, 0, 0, 0.05);
+    --card-bg: #FFFFFF;
+    --text-main: #000000;
+    --text-muted: #3D3D3D;
+    --primary: #5C33F6;
+    --primary-hover: #451EC4;
+    --accent: #FFD200;
+    --success: #00E887;
+    --success-hover: #00C672;
+    --error: #FF5C5C;
+    --error-hover: #E04B4B;
+    --font-display: 'Space Grotesk', sans-serif;
+    --font-sans: 'Plus Jakarta Sans', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: var(--bg);
+    /*Neubrutalist Dot Matrix Grid Pattern */
+    background-image:
+        radial-gradient(var(--grid-color) 2px, transparent 2px);
+    background-size: 24px 24px;
+    background-attachment: fixed;
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    padding-bottom: 20px;
+}
+
+/*Beautiful Neubrutalist Scrollbar */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg);
+    border-left: 3px solid #000000;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border: 3px solid #000000;
+    border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+}
+
+header {
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #FFFFFF;
+    border-bottom: 3px solid #000000;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    width: 38px;
+    height: 38px;
+    background: var(--accent);
+    border: 3px solid #000000;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    color: #000000;
+    font-family: var(--font-display);
+    box-shadow: 2px 2px 0px #000000;
+    font-size: 16px;
+}
+
+.logo-text {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: #000000;
+}
+
+.badge-status {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    background: #FFFFFF;
+    border: 3px solid #000000;
+    color: #000000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 3px 3px 0px #000000;
+}
+
+.badge-status::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--success);
+    border: 1.5px solid #000000;
+}
+
+.main-wrapper {
+    max-width: 1200px;
+    width: 100%;
+    margin: 40px auto;
+    padding: 0 24px;
+    flex-grow: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+}
+
+@media (max-width: 968px) {
+    .main-wrapper {
+        grid-template-columns: 1fr;
+        margin: 20px auto;
+        gap: 30px;
+    }
+}
+
+.panel-card {
+    background: var(--card-bg);
+    border: 3px solid #000000;
+    border-radius: 16px;
+    padding: 35px;
+    box-shadow: 6px 6px 0px #000000;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.panel-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 8px 8px 0px #000000;
+}
+
+.panel-card.active-card {
+    border-color: #000000;
+}
+
+/*Neubrutalist top badge instead of transparent glow */
+.panel-card.active-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: var(--primary);
+}
+
+.meta-tag {
+    background: var(--accent);
+    color: #000000;
+    border: 2px solid #000000;
+    border-radius: 4px;
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    margin-bottom: 18px;
+    display: inline-block;
+    width: fit-content;
+    box-shadow: 2px 2px 0px #000000;
+}
+
+h2 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 25px;
+    letter-spacing: -0.5px;
+    color: #000000;
+}
+
+.input-group {
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+label {
+    font-size: 13px;
+    font-weight: 800;
+    color: #000000;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.textarea-container {
+    position: relative;
+}
+
+textarea {
+    width: 100%;
+    height: 180px;
+    background: #FFFFFF;
+    border: 3px solid #000000;
+    border-radius: 12px;
+    color: #000000;
+    padding: 16px;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+textarea:focus {
+    background: #FFFDF9;
+    border-color: var(--primary);
+    box-shadow: 3px 3px 0px #000000;
+}
+
+/*Modern Neubrutalist Drag & Drop Zone */
+.upload-zone {
+    border: 3px dashed #000000;
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+    background: #FFFBF0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+}
+
+.upload-zone:hover,
+.upload-zone.dragover {
+    border-style: solid;
+    background: #FFF4D0;
+    transform: scale(0.99);
+}
+
+.upload-icon {
+    font-size: 36px;
+    filter: drop-shadow(2px 2px 0px #000000);
+}
+
+.upload-text {
+    font-size: 14px;
+    font-weight: 700;
+    color: #000000;
+}
+
+.upload-text strong {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+.file-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.file-preview {
+    display: none;
+    width: 100%;
+    background: #FFFFFF;
+    border: 3px solid #000000;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-top: 12px;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 3px 3px 0px #000000;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: #000000;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-thumbnail {
+    width: 44px;
+    height: 44px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 3px solid #000000;
+}
+
+.remove-file {
+    background: var(--error);
+    color: #000000;
+    border: 2px solid #000000;
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: 900;
+    font-size: 16px;
+    box-shadow: 2px 2px 0px #000000;
+    transition: all 0.1s ease;
+}
+
+.remove-file:hover {
+    background: var(--error-hover);
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0px #000000;
+}
+
+.remove-file:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0px #000000;
+}
+
+/*Beautiful Interactive Neubrutalist Button */
+.btn-analyze {
+    width: 100%;
+    padding: 18px;
+    background: var(--primary);
+    border: 3px solid #000000;
+    border-radius: 12px;
+    color: #FFFFFF;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 4px 4px 0px #000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.btn-analyze:hover {
+    background: var(--primary-hover);
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px #000000;
+}
+
+.btn-analyze:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px #000000;
+}
+
+.btn-analyze svg {
+    filter: drop-shadow(1px 1px 0px #000000);
+}
+
+/*Empty State */
+.empty-state {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 60px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    flex-grow: 1;
+}
+
+.empty-state svg {
+    width: 80px;
+    height: 80px;
+    color: #000000;
+    filter: drop-shadow(3px 3px 0px var(--accent));
+}
+
+.empty-state p {
+    font-size: 15px;
+    font-weight: 600;
+    max-width: 320px;
+    line-height: 1.6;
+    color: #000000;
+}
+
+/*Prediction Result Neubrutalist Styling */
+.result-container {
+    display: none;
+    flex-direction: column;
+    gap: 24px;
+    animation: slideUp 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.result-header {
+    text-align: center;
+    padding: 25px;
+    border: 3px solid #000000;
+    border-radius: 16px;
+    margin-bottom: 5px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 4px 4px 0px #000000;
+}
+
+.result-badge {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 32px;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+    color: #000000;
+    text-shadow: 2px 2px 0px #FFFFFF;
+}
+
+.result-subtitle {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #000000;
+}
+
+.result-authentic {
+    background: var(--success);
+}
+
+.result-fake {
+    background: var(--error);
+}
+
+.info-card {
+    background: #FFFFFF;
+    border: 3px solid #000000;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 3px 3px 0px #000000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.info-card-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #000000;
+    font-weight: 800;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.info-card-text {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #000000;
+    font-weight: 600;
+}
+
+.cleaned-text {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+/*Beautiful Neubrutalist Loading Radar Animation */
+.loading-container {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 0;
+    gap: 25px;
+    flex-grow: 1;
+}
+
+.radar {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    border: 3px solid #000000;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #FFFFFF;
+    box-shadow: 4px 4px 0px #000000;
+}
+
+.radar::before,
+.radar::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    border: 3px solid var(--primary);
+    width: 100%;
+    height: 100%;
+    animation: pulse 1.8s infinite linear;
+    opacity: 0;
+}
+
+.radar::after {
+    animation-delay: 0.9s;
+}
+
+.radar-inner {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 3px solid #000000;
+    box-shadow: 2px 2px 0px #000000;
+    animation: scalePulse 1.8s infinite ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.radar-inner svg {
+    width: 22px;
+    height: 22px;
+    color: #000000;
+    animation: rotateRadar 1.8s infinite linear;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+@keyframes scalePulse {
+
+    0%,
+    100% {
+        transform: scale(0.9);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+@keyframes rotateRadar {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-text {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 800;
+    color: #000000;
+    letter-spacing: 0.5px;
+    text-align: center;
+    background: var(--accent);
+    padding: 6px 16px;
+    border: 3px solid #000000;
+    border-radius: 6px;
+    box-shadow: 3px 3px 0px #000000;
+}
+
+.error-banner {
+    display: none;
+    background: var(--error);
+    border: 3px solid #000000;
+    color: #000000;
+    padding: 16px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    align-items: center;
+    gap: 12px;
+    line-height: 1.5;
+    margin-bottom: 15px;
+    box-shadow: 3px 3px 0px #000000;
+    animation: slideUp 0.2s ease;
+}
+
+/*Local History Styling (Database-free solution) */
+.history-section {
+    grid-column: 1 / -1;
+    margin-top: 20px;
+    background: #FFFFFF;
+    border: 3px solid #000000;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 6px 6px 0px #000000;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    border-bottom: 3px solid #000000;
+    padding-bottom: 15px;
+}
+
+.history-title {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #000000;
+}
+
+.btn-clear-history {
+    background: #FFFFFF;
+    border: 2px solid #000000;
+    color: #000000;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 2px 2px 0px #000000;
+    transition: all 0.1s ease;
+}
+
+.btn-clear-history:hover {
+    color: #FFFFFF;
+    background: var(--error);
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0px #000000;
+}
+
+.btn-clear-history:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0px #000000;
+}
+
+.history-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding: 5px;
+}
+
+.history-list:empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    color: #000000;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.history-list:empty::after {
+    content: 'Belum ada riwayat analisis ulasan.';
+    opacity: 0.7;
+}
+
+.history-item {
+    background: #FFFFFF;
+    border: 3px solid #000000;
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    box-shadow: 3px 3px 0px #000000;
+    transition: all 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-align: left;
+}
+
+.history-item:hover {
+    background: #FFFDF4;
+    transform: translate(-2px, -2px);
+    box-shadow: 5px 5px 0px #000000;
+}
+
+.history-item:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0px #000000;
+}
+
+.history-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.history-date {
+    font-size: 11px;
+    font-weight: 700;
+    color: #000000;
+    opacity: 0.6;
+}
+
+.mini-badge {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 2px solid #000000;
+    color: #000000;
+    box-shadow: 1px 1px 0px #000000;
+}
+
+.mini-badge-asli {
+    background: var(--success);
+}
+
+.mini-badge-palsu {
+    background: var(--error);
+}
+
+.history-text {
+    font-size: 13px;
+    font-weight: 700;
+    color: #000000;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+}
+
+footer {
+    margin-top: 40px;
+    padding: 30px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #000000;
+    border-top: 3px solid #000000;
+    background: #FFFFFF;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+footer span {
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+/* Confidence Score Bar */
+.confidence-card {
+    background: #FFFFFF;
+}
+
+.info-card-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.confidence-value {
+    margin-left: auto;
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--primary);
+    letter-spacing: -0.5px;
+}
+
+.confidence-bar-bg {
+    width: 100%;
+    height: 14px;
+    background: #F0F0F0;
+    border: 2px solid #000000;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 2px 2px 0px #000000;
+}
+
+.confidence-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.bar-asli {
+    background: var(--success);
+}
+
+.bar-palsu {
+    background: var(--error);
+}
