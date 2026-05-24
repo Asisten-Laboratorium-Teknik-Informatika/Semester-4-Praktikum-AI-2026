@@ -1,0 +1,914 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Factify.AI — Deteksi Berita Palsu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300;1,9..40,400&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink: #121212;
+      --sun: #FBDA10;
+      --paper: #FFFFFF;
+      --ink2: #1d1d1d;
+      --ink3: #2c2c2c;
+      --ghost: rgba(255,255,255,0.06);
+      --ghost2: rgba(255,255,255,0.12);
+      --muted: rgba(255,255,255,0.38);
+      --muted2: rgba(255,255,255,0.55);
+      --sun-dim: rgba(251,218,16,0.12);
+      --sun-mid: rgba(251,218,16,0.5);
+      --red: #FF4444;
+      --green: #22C55E;
+      --syne: 'Syne', sans-serif;
+      --dm: 'DM Sans', sans-serif;
+      --caslon: 'Libre Caslon Text', Georgia, serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--dm);
+      background: var(--ink);
+      color: var(--paper);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    .nav {
+      position: sticky; top: 0; z-index: 50;
+      background: var(--ink);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px;
+      height: 60px;
+    }
+    .nav::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+      height: 1px; background: var(--ghost2);
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none;
+    }
+    .brand-mark {
+      width: 30px; height: 30px; background: var(--sun);
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 6px;
+    }
+    .brand-mark svg { width: 16px; height: 16px; }
+    .brand-name {
+      font-family: var(--syne); font-weight: 800; font-size: 17px;
+      color: var(--paper); letter-spacing: -0.01em;
+    }
+    .brand-name em { font-style: normal; color: var(--sun); }
+    .nav-meta {
+      display: flex; align-items: center; gap: 20px;
+    }
+    .nav-tag {
+      font-family: var(--mono); font-size: 10px;
+      color: var(--muted); letter-spacing: 0.06em;
+    }
+    .nav-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--green);
+      animation: glow 2.5s ease-in-out infinite;
+    }
+    @keyframes glow {
+      0%,100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      padding: 80px 32px 0;
+      overflow: hidden;
+      min-height: calc(100vh - 60px);
+      display: flex; flex-direction: column;
+    }
+
+    /* big background letters */
+    .hero-bg-text {
+      position: absolute; top: 20px; right: -20px;
+      font-family: var(--syne); font-weight: 800;
+      font-size: clamp(120px, 18vw, 200px);
+      line-height: 1;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(251,218,16,0.08);
+      letter-spacing: -0.04em;
+      pointer-events: none; user-select: none;
+      z-index: 0;
+    }
+
+    /* yellow blob shapes */
+    .blob {
+      position: absolute; border-radius: 50%;
+      pointer-events: none; z-index: 0;
+    }
+    .blob-1 {
+      width: 340px; height: 340px;
+      background: var(--sun-dim);
+      top: -80px; right: 15%;
+      filter: blur(80px);
+    }
+    .blob-2 {
+      width: 200px; height: 200px;
+      background: rgba(251,218,16,0.06);
+      bottom: 100px; left: 5%;
+      filter: blur(50px);
+    }
+
+    .hero-inner {
+      position: relative; z-index: 1;
+      flex: 1; display: flex; flex-direction: column;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-bottom: 30px;
+    }
+    .eyebrow-chip {
+      font-family: var(--mono); font-size: 10px;
+      color: var(--sun); letter-spacing: 0.1em;
+      border: 1px solid rgba(251,218,16,0.3);
+      padding: 5px 12px; border-radius: 999px;
+      background: var(--sun-dim);
+    }
+    .eyebrow-line {
+      width: 40px; height: 1px; background: rgba(251,218,16,0.3);
+    }
+
+    .hero-h1 {
+      font-family: var(--syne);
+      font-weight: 800;
+      font-size: clamp(52px, 7.5vw, 96px);
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      color: var(--paper);
+      margin-bottom: 6px;
+      max-width: 700px;
+    }
+    .hero-h1 .yellow { color: var(--sun); }
+    .hero-h1 .outline {
+      -webkit-text-stroke: 2px rgba(255,255,255,0.3);
+      color: transparent;
+    }
+
+    .hero-body-row {
+      display: flex; align-items: flex-end; gap: 60px;
+      margin-top: 40px;
+      flex-wrap: wrap;
+    }
+
+    .hero-desc {
+      font-family: var(--caslon);
+      font-size: 16px; font-weight: 400; line-height: 1.85;
+      color: var(--muted2);
+      max-width: 380px;
+    }
+    .hero-desc strong { font-weight: 700; color: var(--paper); }
+
+    .hero-ctas {
+      display: flex; flex-direction: column; gap: 10px;
+      flex-shrink: 0;
+    }
+    .cta-main {
+      font-family: var(--syne); font-weight: 700; font-size: 14px;
+      letter-spacing: 0.02em;
+      padding: 14px 34px;
+      background: var(--sun);
+      color: var(--ink);
+      border: none; border-radius: 6px;
+      cursor: pointer; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 8px;
+      transition: transform .15s, opacity .15s;
+    }
+    .cta-main:hover { opacity: 0.88; transform: translateY(-1px); }
+    .cta-sub {
+      font-family: var(--dm); font-size: 13px; font-weight: 300;
+      color: var(--muted);
+      background: transparent; border: none;
+      cursor: pointer; text-decoration: none;
+      text-align: center;
+      transition: color .15s;
+    }
+    .cta-sub:hover { color: var(--paper); }
+
+    /* floating badges row */
+    .hero-badges {
+      display: flex; gap: 12px; flex-wrap: wrap;
+      margin-top: 60px;
+      padding-bottom: 50px;
+    }
+    .badge {
+      display: flex; align-items: center; gap: 10px;
+      border: 1px solid var(--ghost2);
+      border-radius: 10px;
+      padding: 12px 18px;
+      background: var(--ghost);
+      backdrop-filter: blur(10px);
+      transition: border-color .15s, background .15s;
+    }
+    .badge:hover {
+      border-color: rgba(251,218,16,0.25);
+      background: var(--sun-dim);
+    }
+    .badge-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--sun);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .badge-icon svg { width: 15px; height: 15px; }
+    .badge-txt {}
+    .badge-val {
+      font-family: var(--syne); font-weight: 700; font-size: 18px;
+      color: var(--paper); line-height: 1;
+    }
+    .badge-lbl {
+      font-size: 11px; color: var(--muted); margin-top: 2px;
+    }
+
+    /* ── WAVE DIVIDER ── */
+    .wave {
+      width: 100%; overflow: hidden; line-height: 0;
+      background: var(--ink);
+    }
+    .wave svg { display: block; }
+
+    /* ── ANALYZER SECTION ── */
+    .analyzer-wrap {
+      background: #0d0d0d;
+      padding: 72px 32px 80px;
+    }
+
+    .section-tag {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 48px;
+    }
+    .section-tag-line {
+      width: 24px; height: 2px; background: var(--sun);
+    }
+    .section-tag-txt {
+      font-family: var(--mono); font-size: 11px;
+      color: var(--sun); letter-spacing: 0.1em;
+    }
+
+    .analyzer-layout {
+      display: grid; grid-template-columns: 1.1fr 0.9fr;
+      gap: 32px; max-width: 1100px; margin: 0 auto;
+    }
+
+    /* input panel */
+    .input-panel {
+      border: 1px solid var(--ghost2);
+      border-radius: 16px;
+      overflow: hidden;
+      background: var(--ink2);
+    }
+    .panel-titlebar {
+      display: flex; align-items: center; gap: 6px;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--ghost2);
+      background: rgba(255,255,255,0.03);
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: #FF5F57; }
+    .dot-y { background: #FEBC2E; }
+    .dot-g { background: #28C840; }
+    .panel-title {
+      font-family: var(--mono); font-size: 11px;
+      color: var(--muted); margin-left: 6px; letter-spacing: 0.04em;
+    }
+
+    .panel-body { padding: 24px; }
+
+    .input-hdr {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 10px;
+    }
+    .input-lbl {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em;
+      color: rgba(251,218,16,0.6);
+    }
+    .char-ct { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+    .char-ct.warn { color: var(--red); }
+
+    textarea {
+      width: 100%; height: 180px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--ghost2);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-family: var(--dm); font-size: 13px; font-weight: 300;
+      color: var(--paper); line-height: 1.8;
+      resize: none; outline: none;
+      transition: border-color .15s;
+    }
+    textarea::placeholder { color: rgba(255,255,255,.2); font-family: var(--caslon); font-style: italic; }
+    textarea:focus { border-color: rgba(251,218,16,0.4); }
+
+    .samples {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      margin: 12px 0 20px;
+    }
+    .samples-lbl { font-size: 11px; color: var(--muted); }
+    .chip {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.05em;
+      padding: 5px 14px; border-radius: 999px;
+      border: 1px solid; cursor: pointer; background: transparent;
+      transition: all .12s;
+    }
+    .chip-real { color: var(--green); border-color: rgba(34,197,94,.25); }
+    .chip-real:hover { background: rgba(34,197,94,.08); }
+    .chip-fake { color: var(--red); border-color: rgba(255,68,68,.25); }
+    .chip-fake:hover { background: rgba(255,68,68,.08); }
+    .chip-clear { color: var(--muted); border-color: var(--ghost2); }
+    .chip-clear:hover { color: var(--paper); border-color: var(--muted); }
+
+    .btn-run {
+      width: 100%; padding: 15px;
+      background: var(--sun); color: var(--ink);
+      border: none; border-radius: 10px;
+      font-family: var(--syne); font-weight: 700; font-size: 13px;
+      letter-spacing: 0.05em;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: opacity .15s, transform .1s;
+    }
+    .btn-run:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
+    .btn-run:active:not(:disabled) { transform: translateY(0); }
+    .btn-run:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-run svg { width: 15px; height: 15px; }
+
+    .error-msg {
+      display: none; margin-top: 12px;
+      font-size: 12px; color: var(--red);
+      padding: 10px 14px;
+      border-left: 2px solid var(--red);
+      background: rgba(255,68,68,0.06);
+      border-radius: 0 6px 6px 0;
+    }
+    .error-msg.show { display: block; }
+
+    /* loading */
+    .loading-state {
+      display: none; padding: 28px 0;
+      align-items: center; gap: 14px;
+    }
+    .loading-state.active { display: flex; }
+    .spin {
+      width: 18px; height: 18px; border-radius: 50%;
+      border: 2px solid var(--ghost2);
+      border-top-color: var(--sun);
+      animation: spin .7s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-txt {
+      font-family: var(--mono); font-size: 11px;
+      color: var(--muted); letter-spacing: 0.06em;
+    }
+
+    /* result */
+    .result-state { display: none; margin-top: 18px; }
+    .result-state.show { display: block; animation: fadeUp .3s ease; }
+    @keyframes fadeUp { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: none; } }
+
+    .result-card {
+      border-radius: 12px; overflow: hidden;
+      border: 1px solid;
+    }
+    .result-card.hoax { border-color: rgba(255,68,68,.3); background: rgba(255,68,68,.04); }
+    .result-card.fakta { border-color: rgba(34,197,94,.3); background: rgba(34,197,94,.04); }
+
+    .result-head {
+      padding: 14px 18px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .hoax .result-head { background: rgba(255,68,68,.08); }
+    .fakta .result-head { background: rgba(34,197,94,.08); }
+    .result-badge {
+      font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em;
+      padding: 3px 9px; border-radius: 4px;
+    }
+    .hoax .result-badge { background: var(--red); color: #fff; }
+    .fakta .result-badge { background: var(--green); color: var(--ink); }
+    .result-head-txt { font-size: 12px; color: var(--muted2); }
+
+    .result-body { padding: 18px 18px 16px; }
+
+    .result-verdict {
+      font-family: var(--syne); font-weight: 800;
+      font-size: 2.8rem; line-height: 1;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .hoax .result-verdict { color: var(--red); }
+    .fakta .result-verdict { color: var(--green); }
+
+    .result-desc {
+      font-family: var(--caslon);
+      font-size: 13px; font-weight: 400; font-style: italic; color: var(--muted);
+      line-height: 1.75; margin-bottom: 18px;
+    }
+
+    .conf-wrap { margin-bottom: 14px; }
+    .conf-top {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 8px;
+    }
+    .conf-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; color: var(--muted); }
+    .conf-pct { font-family: var(--syne); font-weight: 700; font-size: 20px; }
+    .hoax .conf-pct { color: var(--red); }
+    .fakta .conf-pct { color: var(--green); }
+    .conf-track {
+      height: 3px; background: var(--ghost2); border-radius: 2px; overflow: hidden;
+    }
+    .conf-fill {
+      height: 100%; width: 0; border-radius: 2px;
+      transition: width 1s cubic-bezier(.34,1.1,.64,1);
+    }
+    .hoax .conf-fill { background: var(--red); }
+    .fakta .conf-fill { background: var(--green); }
+
+    .meta-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+    .mpill {
+      font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em;
+      color: var(--muted); border: 1px solid var(--ghost2);
+      padding: 3px 9px; border-radius: 4px;
+    }
+
+    .btn-reset {
+      width: 100%; margin-top: 10px; padding: 11px;
+      background: transparent; border: 1px solid var(--ghost2);
+      border-radius: 8px;
+      font-family: var(--dm); font-size: 12px; color: var(--muted);
+      cursor: pointer; transition: all .12s; letter-spacing: 0.02em;
+    }
+    .btn-reset:hover { border-color: var(--sun-mid); color: var(--sun); }
+
+    /* right panel: how it works */
+    .how-panel {
+      display: flex; flex-direction: column; gap: 16px;
+    }
+
+    .how-intro {
+      font-family: var(--syne); font-weight: 700;
+      font-size: clamp(1.4rem, 2.5vw, 2rem);
+      line-height: 1.15; color: var(--paper);
+      letter-spacing: -0.02em;
+    }
+    .how-intro span { color: var(--sun); }
+
+    .how-steps { display: flex; flex-direction: column; gap: 0; }
+
+    .how-step {
+      display: flex; gap: 18px;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--ghost2);
+      position: relative;
+    }
+    .how-step:last-child { border-bottom: none; }
+
+    .step-left {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 0; width: 36px; flex-shrink: 0;
+    }
+    .step-circle {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--sun-dim); border: 1px solid rgba(251,218,16,0.2);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .step-circle-num {
+      font-family: var(--syne); font-weight: 700; font-size: 13px;
+      color: var(--sun);
+    }
+    .step-connector {
+      flex: 1; width: 1px; background: var(--ghost2); margin-top: 6px;
+    }
+    .how-step:last-child .step-connector { display: none; }
+
+    .step-right { flex: 1; padding-top: 4px; }
+    .step-title {
+      font-family: var(--syne); font-weight: 700; font-size: 14px;
+      color: var(--paper); margin-bottom: 6px; letter-spacing: -0.01em;
+    }
+    .step-desc {
+      font-family: var(--caslon);
+      font-size: 13px; font-weight: 400; color: var(--muted);
+      line-height: 1.8;
+    }
+
+    .tech-card {
+      border: 1px solid var(--sun-dim);
+      border-radius: 12px;
+      padding: 18px 20px;
+      background: var(--sun-dim);
+      margin-top: 4px;
+    }
+    .tech-card-title {
+      font-family: var(--mono); font-size: 10px;
+      color: var(--sun); letter-spacing: 0.1em; margin-bottom: 10px;
+    }
+    .tech-items { display: flex; flex-direction: column; gap: 8px; }
+    .tech-item {
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .tech-key { font-size: 12px; color: var(--muted2); }
+    .tech-val { font-family: var(--mono); font-size: 11px; color: var(--sun); }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--ghost2);
+      padding: 28px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .footer-brand {
+      font-family: var(--syne); font-weight: 800; font-size: 15px;
+      color: var(--muted);
+    }
+    .footer-brand span { color: var(--sun); }
+    .footer-note { font-family: var(--caslon); font-style: italic; font-size: 12px; color: rgba(255,255,255,.2); }
+
+    /* responsive */
+    @media (max-width: 760px) {
+      .hero { padding: 56px 20px 0; }
+      .hero-body-row { gap: 32px; }
+      .hero-badges { gap: 8px; }
+      .badge { padding: 10px 14px; }
+      .analyzer-layout { grid-template-columns: 1fr; }
+      .analyzer-wrap { padding: 48px 20px 60px; }
+      footer { padding: 20px; flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-brand" href="#">
+    <div class="brand-mark">
+      <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="7" cy="7" r="4.2" stroke="#121212" stroke-width="1.8"/>
+        <line x1="10.2" y1="10.2" x2="13.5" y2="13.5" stroke="#121212" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="5.5" y1="7" x2="8.5" y2="7" stroke="#121212" stroke-width="1.4" stroke-linecap="round"/>
+        <line x1="7" y1="5.5" x2="7" y2="8.5" stroke="#121212" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="brand-name">Factify<em>.AI</em></span>
+  </a>
+  <div class="nav-meta">
+    <span class="nav-tag">Bi-LSTM · v2.0</span>
+    <div class="nav-dot"></div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="hero-bg-text">VERIFY</div>
+
+  <div class="hero-inner">
+    <div class="hero-eyebrow">
+      <div class="eyebrow-chip">AI-Powered Detection</div>
+      <div class="eyebrow-line"></div>
+    </div>
+
+    <h1 class="hero-h1">
+      Satu klik<br>
+      untuk tahu<br>
+      <span class="yellow">fakta</span> atau <span class="outline">hoax.</span>
+    </h1>
+
+    <div class="hero-body-row">
+      <p class="hero-desc">
+        Factify.AI menggunakan model <strong>Bidirectional LSTM</strong> untuk menganalisis pola teks berita berbahasa Inggris secara instan. Tanpa basa-basi, langsung ke intinya.
+      </p>
+      <div class="hero-ctas">
+        <a class="cta-main" href="#analyzer">
+          <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="6.5" cy="6.5" r="4"/><line x1="9.9" y1="9.9" x2="13" y2="13"/>
+          </svg>
+          Analisis Sekarang
+        </a>
+        <a class="cta-sub" href="#how">Lihat cara kerjanya ↓</a>
+      </div>
+    </div>
+
+    <div class="hero-badges">
+      <div class="badge">
+        <div class="badge-icon">
+          <svg viewBox="0 0 15 15" fill="none" stroke="#121212" stroke-width="1.8" stroke-linecap="round">
+            <path d="M7 2L8.5 5.5L12 6L9.5 8.5L10 12L7 10.5L4 12L4.5 8.5L2 6L5.5 5.5Z"/>
+          </svg>
+        </div>
+        <div class="badge-txt">
+          <div class="badge-val">95%+</div>
+          <div class="badge-lbl">Akurasi model</div>
+        </div>
+      </div>
+      <div class="badge">
+        <div class="badge-icon">
+          <svg viewBox="0 0 15 15" fill="none" stroke="#121212" stroke-width="1.8" stroke-linecap="round">
+            <circle cx="7.5" cy="7.5" r="5.5"/>
+            <path d="M7.5 4v3.5l2 2"/>
+          </svg>
+        </div>
+        <div class="badge-txt">
+          <div class="badge-val">&lt; 2s</div>
+          <div class="badge-lbl">Waktu analisis</div>
+        </div>
+      </div>
+      <div class="badge">
+        <div class="badge-icon">
+          <svg viewBox="0 0 15 15" fill="none" stroke="#121212" stroke-width="1.8" stroke-linecap="round">
+            <rect x="2" y="3" width="11" height="9" rx="1.5"/>
+            <path d="M5 7h5M5 9.5h3"/>
+          </svg>
+        </div>
+        <div class="badge-txt">
+          <div class="badge-val">Bi-LSTM</div>
+          <div class="badge-lbl">Arsitektur model</div>
+        </div>
+      </div>
+      <div class="badge">
+        <div class="badge-icon">
+          <svg viewBox="0 0 15 15" fill="none" stroke="#121212" stroke-width="1.8" stroke-linecap="round">
+            <path d="M3 12V8M7 12V5M11 12V3"/>
+          </svg>
+        </div>
+        <div class="badge-txt">
+          <div class="badge-val">Score</div>
+          <div class="badge-lbl">Confidence ditampilkan</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ANALYZER -->
+<section class="analyzer-wrap" id="analyzer">
+  <div class="section-tag">
+    <div class="section-tag-line"></div>
+    <span class="section-tag-txt">01 — ANALISIS BERITA</span>
+  </div>
+
+  <div class="analyzer-layout">
+    <!-- Input panel -->
+    <div>
+      <div class="input-panel">
+        <div class="panel-titlebar">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+          <span class="panel-title">factify.ai — analyzer.exe</span>
+        </div>
+        <div class="panel-body">
+          <div class="input-hdr">
+            <span class="input-lbl">// NEWS_TEXT</span>
+            <span class="char-ct" id="charCount">0 chars</span>
+          </div>
+          <textarea
+            id="newsInput"
+            placeholder="// Paste teks berita berbahasa Inggris di sini..."
+            oninput="handleInput()"
+          ></textarea>
+
+          <div class="samples">
+            <span class="samples-lbl">Coba:</span>
+            <button class="chip chip-real" onclick="loadSample('real')">✓ Real</button>
+            <button class="chip chip-fake" onclick="loadSample('fake')">✗ Hoax</button>
+            <button class="chip chip-clear" onclick="clearAll()">⌫ Clear</button>
+          </div>
+
+          <button class="btn-run" id="runBtn" onclick="runAnalysis()">
+            <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="6.5" cy="6.5" r="4"/><line x1="9.9" y1="9.9" x2="13" y2="13"/>
+            </svg>
+            Analisis
+          </button>
+
+          <div class="error-msg" id="errMsg"></div>
+
+          <div class="loading-state" id="loadState">
+            <div class="spin"></div>
+            <span class="loading-txt">// running bi-lstm inference...</span>
+          </div>
+
+          <div class="result-state" id="resultState">
+            <div class="result-card" id="rCard">
+              <div class="result-head">
+                <span class="result-badge" id="rBadge"></span>
+                <span class="result-head-txt" id="rHeadTxt"></span>
+              </div>
+              <div class="result-body">
+                <div class="result-verdict" id="rVerdict"></div>
+                <div class="result-desc" id="rDesc"></div>
+                <div class="conf-wrap">
+                  <div class="conf-top">
+                    <span class="conf-label">CONFIDENCE</span>
+                    <span class="conf-pct" id="rPct">0%</span>
+                  </div>
+                  <div class="conf-track">
+                    <div class="conf-fill" id="rFill"></div>
+                  </div>
+                </div>
+                <div class="meta-pills" id="rMeta"></div>
+              </div>
+            </div>
+            <button class="btn-reset" onclick="resetAll()">↩ Analisis berita lain</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: How it works -->
+    <div class="how-panel" id="how">
+      <div class="how-intro">
+        Tiga langkah dari teks ke <span>verdict.</span>
+      </div>
+
+      <div class="how-steps">
+        <div class="how-step">
+          <div class="step-left">
+            <div class="step-circle"><span class="step-circle-num">1</span></div>
+            <div class="step-connector"></div>
+          </div>
+          <div class="step-right">
+            <div class="step-title">Input Teks Berita</div>
+            <p class="step-desc">Paste atau ketik teks berita berbahasa Inggris ke kolom analisis. Minimal 20 karakter agar model punya cukup konteks untuk bekerja.</p>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="step-left">
+            <div class="step-circle"><span class="step-circle-num">2</span></div>
+            <div class="step-connector"></div>
+          </div>
+          <div class="step-right">
+            <div class="step-title">Proses Bi-LSTM</div>
+            <p class="step-desc">Model membersihkan, tokenisasi, lalu menganalisis pola bahasa dari dua arah — forward dan backward — untuk menangkap konteks yang tersembunyi.</p>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="step-left">
+            <div class="step-circle"><span class="step-circle-num">3</span></div>
+            <div class="step-connector"></div>
+          </div>
+          <div class="step-right">
+            <div class="step-title">Baca Verdict + Score</div>
+            <p class="step-desc">Hasil FAKTA atau HOAX muncul bersama confidence score. Semakin tinggi persentasenya, semakin yakin modelnya terhadap prediksi tersebut.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="tech-card">
+        <div class="tech-card-title">// MODEL INFO</div>
+        <div class="tech-items">
+          <div class="tech-item">
+            <span class="tech-key">Arsitektur</span>
+            <span class="tech-val">Bidirectional LSTM</span>
+          </div>
+          <div class="tech-item">
+            <span class="tech-key">Max sequence</span>
+            <span class="tech-val">300 tokens</span>
+          </div>
+          <div class="tech-item">
+            <span class="tech-key">Bahasa</span>
+            <span class="tech-val">English</span>
+          </div>
+          <div class="tech-item">
+            <span class="tech-key">Output</span>
+            <span class="tech-val">FAKTA / HOAX</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">Factify<span>.AI</span></div>
+  <p class="footer-note">Model prediktif — selalu verifikasi ke sumber terpercaya. &copy; 2025</p>
+</footer>
+
+<script>
+  const SAMPLES = {
+    real: [
+      `NASA's Perseverance rover has successfully collected its first rock sample from Mars, a significant milestone in the mission to determine whether the planet ever harbored ancient microbial life. Scientists at the Jet Propulsion Laboratory confirmed the sample is sealed in a tube and will await a future retrieval mission to bring it back to Earth for detailed analysis.`,
+      `The World Health Organization announced on Tuesday that global polio cases have dropped by 99% since 1988, attributing the decline to a coordinated international vaccination effort. Health officials said the remaining cases are concentrated in a few regions and expressed cautious optimism that full eradication may be achievable within the next decade.`,
+      `The European Central Bank raised its key interest rate by 25 basis points on Thursday, bringing it to the highest level in over a decade. ECB President Christine Lagarde said the decision was driven by persistently high inflation across the eurozone, while acknowledging that economic growth in the region has slowed significantly.`,
+      `Apple reported quarterly revenue of $94.8 billion in its latest earnings report, beating Wall Street expectations. The company said strong iPhone sales in emerging markets, particularly India, helped offset weaker demand in China.`
+    ],
+    fake: [
+      `BREAKING: Scientists reveal that 5G cell towers are secretly being used by global elites to control the minds of ordinary citizens. Leaked documents allegedly show that microscopic nanobots, distributed through the COVID vaccine, are activated by 5G frequencies to alter human thought patterns and suppress independent thinking.`,
+      `EXCLUSIVE: A classified NASA document has confirmed that the moon landing in 1969 was entirely staged in a Hollywood studio. The document, allegedly leaked by a former agency insider, reveals that director Stanley Kubrick was paid millions to film the fake footage.`,
+      `URGENT WARNING: Drinking tap water has been proven to cause rapid memory loss and lower IQ in children. A suppressed study from Harvard allegedly found that water fluoridation is a deliberate government program to make the population easier to control.`,
+      `DOCTORS DON'T WANT YOU TO KNOW: A simple mixture of lemon juice and baking soda has been clinically proven to cure cancer in 72 hours. Big Pharma companies have spent billions suppressing this natural remedy to protect their trillion-dollar chemotherapy industry.`
+    ]
+  };
+  const last = { real: -1, fake: -1 };
+
+  function handleInput() {
+    const ta = document.getElementById('newsInput');
+    const n = ta.value.length;
+    const cc = document.getElementById('charCount');
+    cc.textContent = n + ' chars';
+    cc.className = 'char-ct' + (n > 2000 ? ' warn' : '');
+    hideErr();
+  }
+
+  function loadSample(t) {
+    const list = SAMPLES[t];
+    let i; do { i = Math.floor(Math.random()*list.length); } while (i===last[t] && list.length>1);
+    last[t] = i;
+    document.getElementById('newsInput').value = list[i];
+    handleInput(); resetAll();
+  }
+
+  function clearAll() {
+    document.getElementById('newsInput').value = '';
+    handleInput(); resetAll(); hideErr();
+  }
+
+  function showErr(m) {
+    const e = document.getElementById('errMsg');
+    e.textContent = m; e.classList.add('show');
+  }
+  function hideErr() { document.getElementById('errMsg').classList.remove('show'); }
+
+  function resetAll() {
+    document.getElementById('resultState').classList.remove('show');
+    document.getElementById('loadState').classList.remove('active');
+    document.getElementById('runBtn').disabled = false;
+  }
+
+  async function runAnalysis() {
+    const text = document.getElementById('newsInput').value.trim();
+    hideErr();
+    if (!text) { showErr('// Masukkan teks berita terlebih dahulu.'); return; }
+    if (text.length < 20) { showErr('// Teks terlalu pendek. Minimal 20 karakter.'); return; }
+
+    const btn = document.getElementById('runBtn');
+    btn.disabled = true;
+    document.getElementById('resultState').classList.remove('show');
+    document.getElementById('loadState').classList.add('active');
+
+    try {
+      const resp = await fetch('/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+      const data = await resp.json();
+      document.getElementById('loadState').classList.remove('active');
+
+      if (!resp.ok || data.error) {
+        showErr('// ' + (data.error || 'Server error.')); btn.disabled = false; return;
+      }
+
+      renderResult(data, text);
+    } catch(e) {
+      document.getElementById('loadState').classList.remove('active');
+      showErr('// Tidak dapat terhubung ke server. Pastikan Flask berjalan.');
+      btn.disabled = false;
+    }
+  }
+
+  function renderResult(data, originalText) {
+    const isHoax = data.status === 'HOAX';
+    const card = document.getElementById('rCard');
+    card.className = 'result-card ' + (isHoax ? 'hoax' : 'fakta');
+
+    document.getElementById('rBadge').textContent = isHoax ? 'HOAX' : 'VALID';
+    document.getElementById('rHeadTxt').textContent = isHoax
+      ? 'Konten terdeteksi tidak valid'
+      : 'Konten terlihat kredibel';
+    document.getElementById('rVerdict').textContent = isHoax ? 'Hoax' : 'Fakta';
+    document.getElementById('rDesc').textContent = isHoax
+      ? 'Model mengidentifikasi pola bahasa yang umum ditemukan pada konten hoax. Verifikasi ke sumber terpercaya sebelum menyebarkan.'
+      : 'Model menilai konten ini memiliki karakteristik berita yang kredibel. Tetap bijak dan cek sumber aslinya.';
+
+    const conf = data.confidence;
+    document.getElementById('rPct').textContent = conf.toFixed(1) + '%';
+    setTimeout(() => { document.getElementById('rFill').style.width = conf + '%'; }, 60);
+
+    const wc = data.word_count || originalText.split(/\s+/).filter(Boolean).length;
+    const lvl = conf >= 90 ? 'Sangat yakin' : conf >= 70 ? 'Cukup yakin' : 'Perlu verifikasi';
+    document.getElementById('rMeta').innerHTML =
+      `<span class="mpill">${lvl}</span><span class="mpill">${wc} kata</span><span class="mpill">Bi-LSTM</span>`;
+
+    document.getElementById('resultState').classList.add('show');
+    document.getElementById('runBtn').disabled = false;
+    document.getElementById('resultState').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+</script>
+</body>
+</html>
