@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DiabetesDetector</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+  <header>
+    <div class="logo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+        <path d="M12 8v4"></path>
+        <path d="M10 10h4"></path>
+      </svg>
+      Diabetes<span>Detector</span>
+    </div>
+    <div class="nav-actions">
+      <button id="save-exit-btn" class="btn-text hidden" onclick="location.reload()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        Simpan & Keluar
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- View 0: Landing -->
+    <div id="view-0" class="landing-view">
+      <div class="badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path
+            d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z">
+          </path>
+        </svg>
+        STRATIFIKASI RISIKO
+      </div>
+      <h1>Prediksi Risiko Diabetes<br><span>Berbasis AI</span></h1>
+      <p>Menggunakan teknologi Random Forest Classifier untuk memahami risiko kesehatan Anda hari ini. Analisis
+        prediktif
+        tingkat lanjut untuk deteksi dini dan pencegahan yang lebih baik.</p>
+
+      <button class="btn-primary" onclick="nextStep()">
+        Mulai Penilaian
+      </button>
+    </div>
+
+    <!-- Wizard Container -->
+    <div id="wizard" class="wizard-container">
+      <div class="progress-container">
+        <div class="progress-header">
+          <span id="step-label">LANGKAH 1 DARI 9</span>
+          <span class="pct" id="step-pct">11%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+
+      <!-- Step 1: Gender -->
+      <div id="step-1" class="step-layout">
+        <div class="step-left">
+          <h2 class="step-title">Pertama, beri tahu kami jenis kelamin Anda</h2>
+          <p class="step-desc">Pilih opsi yang paling sesuai dengan profil biologis Anda.</p>
+
+          <div class="options-grid">
+            <div class="option-btn" onclick="selectOption('gender', 'Female', this)">
+              <div class="option-icon">♀</div>
+              Perempuan
+            </div>
+            <div class="option-btn" onclick="selectOption('gender', 'Male', this)">
+              <div class="option-icon">♂</div>
+              Laki-laki
+            </div>
+          </div>
+          <input type="hidden" id="gender" value="">
+
+          <div class="step-nav">
+            <button class="btn-secondary" onclick="prevStep()">Kembali</button>
+            <button class="btn-primary" onclick="nextStep()" id="btn-next-1" disabled>Selanjutnya</button>
+          </div>
+        </div>
+        <div class="step-right">
+          <div class="step-image-card">
+            <img class="card-bg-img" src="{{ url_for('static', filename='images/step1.jpg') }}" alt="Step 1 Background">
+          </div>
+          <div class="insight-box">
+            <div class="insight-header">
+              <svg width="16" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              Kenapa Ini Penting?
+            </div>
+            <div class="insight-text">
+              Faktor hormonal dan metabolisme dapat bervariasi antar jenis kelamin. Informasi ini membantu AI kami
+              menyesuaikan model prediktif untuk akurasi yang lebih tinggi.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Age -->
+      <div id="step-2" class="step-layout hidden">
+        <div class="step-left">
+          <h2 class="step-title">Berapa usia Anda?</h2>
+          <p class="step-desc">Geser slider untuk menyesuaikan usia Anda dengan akurat.</p>
+
+          <div class="slider-container">
+            <div class="slider-value editable-value" id="age-val" onclick="makeEditable(this, 'age', 1, 100, 0, '')"
+              title="Klik untuk mengetik nilai">45</div>
+            <div class="slider-unit">Tahun</div>
+            <input type="range" id="age" min="1" max="100" value="45" oninput="updateSlider('age', this.value)">
+          </div>
+
+          <div class="step-nav">
+            <button class="btn-secondary" onclick="prevStep()">Kembali</button>
+            <button class="btn-primary" onclick="nextStep()">Selanjutnya</button>
+          </div>
+        </div>
+        <div class="step-right">
+          <div class="step-image-card">
+            <img class="card-bg-img" src="{{ url_for('static', filename='images/step2.jpg') }}" alt="Step 2 Background">
+          </div>
+          <div class="insight-box">
+            <div class="insight-header">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              Wawasan Klinis
+            </div>
+            <div class="insight-text">
+              Risiko diabetes cenderung meningkat seiring bertambahnya usia, terutama setelah menginjak usia 45 tahun ke
+              atas.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: BMI -->
+      <div id="step-3" class="step-layout hidden">
+        <div class="step-left">
+          <h2 class="step-title">Berapa BMI (Indeks Massa Tubuh) Anda?</h2>
+          <p class="step-desc">Gunakan slider untuk menyesuaikan nilai BMI Anda.</p>
+
+          <div class="slider-container">
+            <div class="slider-value editable-value" id="bmi-val" onclick="makeEditable(this, 'bmi', 10, 60, 1, '')"
+              title="Klik untuk mengetik nilai">23.5</div>
+            <div class="slider-unit">kg/m²</div>
+            <input type="range" id="bmi" min="10" max="60" step="0.1" value="23.5"
+              oninput="updateSlider('bmi', parseFloat(this.value).toFixed(1))">
+          </div>
+
+          <div class="step-nav">
+            <button class="btn-secondary" onclick="prevStep()">Kembali</button>
+            <button class="btn-primary" onclick="nextStep()">Selanjutnya</button>
+          </div>
+        </div>
+        <div class="step-right">
+          <div class="step-image-card">
+            <img class="card-bg-img" src="{{ url_for('static', filename='images/step3.jpg') }}" alt="Step 3 Background">
+          </div>
+          <div class="insight-box">
+            <div class="insight-header">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              Wawasan Klinis
+            </div>
+            <div class="insight-text">
+              BMI sehat biasanya berkisar antara 18.5 hingga 24.9. Menjaga berat badan ideal sangat penting untuk
+              mengurangi risiko diabetes.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Smoking -->
+      <div id="step-4" class="step-layout hidden">
+        <div class="step-left">
+          <h2 class="step-title">Apakah Anda merokok?</h2>
+          <p class="step-desc">Pilih status merokok Anda saat ini untuk analisis yang lebih akurat.</p>
+
+          <div class="list-options">
+            <div class="list-option" onclick="selectListOption('smoking_history', 'never', this)">
+              <div class="list-icon">🚭</div>
+              <div class="list-text">Tidak Pernah</div>
+              <div class="list-radio"></div>
+            </div>
+            <div class="list-option" onclick="selectListOption('smoking_history', 'former', this)">
+              <div class="list-icon">😶‍🌫️</div>
+              <div class="list-text">Mantan Perokok</div>
+              <div class="list-radio"></div>
+            </div>
+            <div class="list-option" onclick="selectListOption('smoking_history', 'current', this)">
+              <div class="list-icon">🚬</div>
+              <div class="list-text">Perokok Aktif</div>
+              <div class="list-radio"></div>
+            </div>
+          </div>
+          <input type="hidden" id="smoking_history" value="">
+
+          <div class="step-nav">
+            <button class="btn-secondary" onclick="prevStep()">Kembali</button>
+            <button class="btn-primary" onclick="nextStep()" id="btn-next-4" disabled>Selanjutnya</button>
+          </div>
+        </div>
+        <div class="step-right">
+          <div class="step-image-card">
+            <img class="card-bg-img" src="{{ url_for('static', filename='images/step4.jpg') }}" alt="Step 4 Background">
+          </div>
+          <div class="insight-box">
+            <div class="insight-header">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              Wawasan Klinis
+            </div>
+            <div class="insight-text">
+              Merokok secara signifikan berdampak pada kesehatan metabolik, meningkatkan risiko resistensi insulin dan
+              akumulasi lemak perut.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5: Hypertension & Heart Disease -->
+      <div id="step-5" class="step-layout hidden">
+        <div class="step-left">
+          <h2 class="step-title">Riwayat Penyakit</h2>
+          <p class="step-desc">Beri tahu kami tentang kondisi kesehatan Anda sebelumnya untuk analisis risiko yang lebih
+            akurat.</p>
+
+          <div class="question-card">
+            <div class="question-header">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+              </svg>
+              <div class="question-text">Apakah Anda pernah didiagnosis menderita Hipertensi (Tekanan Darah Tinggi)?
+              </div>
+            </div>
+            <div class="inline-options">
+              <div class="inline-btn" onclick="selectInlineOption('hypertension', 1, this)">Ya</div>
+              <div class="inline-btn" onclick="selectInlineOption('hypertension', 0, this)">Tidak</div>
+            </div>
+            <input type="hidden" id="hypertension" value="">
+          </div>
+
+          <div class="question-card">
+            <div class="question-header">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                <path
+                  d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                </path>
+              </svg>
+              <div class="question-text">Apakah Anda memiliki riwayat Penyakit Jantung?</div>
+            </div>
+            <div class="inline-options">
+              <div class="inline-btn" onclick="selectInlineOption('heart_disease', 1, this)">Ya</div>
+              <div class="inline-btn" onclick="selectInlineOption('heart_disease', 0, this)">Tidak</div>
+            </div>
+            <input type="hidden" id="heart_disease" value="">
+          </div>
+
+          <div class="step-nav">
+            <button class="btn-secondary" onclick="prevStep()">Kembali</button>
+            <button class="btn-primary" onclick="nextStep()" id="btn-next-5" disabled>Selanjutnya</button>
+          </div>
+        </div>
+        <div class="step-right">
+          <div class="step-image-card">
+            <img class="card-bg-img" src="{{ url_for('static', filename='images/step5.jpg') }}" alt="Step 5 Background">
+          </div>
+          <div class="insight-box">
+            <div class="insight-header">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+              Koneksi Kardiovaskular
+            </div>
+            <div class="insight-text">
+              Kondisi seperti hipertensi dan penyakit jantung memiliki hubungan dua arah yang kuat dengan diabetes.
+              Mengidentifikasi riwayat ini membantu AI kami mengkalibrasi model prediktif untuk menilai beban metabolik
+              sistemik secara keseluruhan.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 6: HbA1c & Glucose -->
+      <div id="step-6" class="step-layout hidden">
+        <div class="step-left">
+          <h2 class="step-title">Berapa kadar gula darah Anda?</h2>
+          <p class="step-desc">Masukkan hasil tes laboratorium terbaru Anda untuk akurasi prediksi maksimal.</p>
+
+          <div class="slider-card">
+            <div class="slider-card-header">
+              <div class="slider-card-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+                Kadar HbA1c (%)
+              </div>
+              <div class="slider-card-value editable-value" id="hba1c-val"
+                onclick="makeEditable(this, 'HbA1c_level', 0.1, 15.0, 1, '%')" title="Klik untuk mengetik nilai">5.5%
+              </div>
+            </div>
+            <input type="range" id="HbA1c_level" min="0.1" max="15.0" step="0.1" value="5.5"
+              oninput="updateSliderCard('hba1c', this.value, '%')">
+            <div class="slider-labels">
+              <span>0.1</span>
+              <span>Normal &lt; 5.7</span>
+              <span>15.0</span>
+            </div>
+          </div>
+
+          <div class="slider-card">
+            <div class="slider-card-header">
+              <div class="slider-card-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                  <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                </svg>
+                Gula Darah Puasa (mg/dL)
+              </div>
+              <div class="slider-card-value editable-value" id="glucose-val"
+                onclick="makeEditable(this, 'blood_glucose_level', 70, 300, 0, '')" title="Klik untuk mengetik nilai">
+                100</div>
+            </div>
+            <input type="range" id="blood_glucose_level" min="70" max="300" value="100"
+              oninput="updateSliderCard('glucose', this.value, '')">
+            <div class="slider-labels">
+              <span>70</span>
+              <span>Normal &lt; 100</span>
+              <span>300</span>
+            </div>
+          </div>
+
+          <div class="step-nav">
+            <button class="btn-secondary" onclick="prevStep()">Kembali</button>
+            <button class="btn-primary" onclick="nextStep()">Selanjutnya</button>
+          </div>
+        </div>
+        <div class="step-right">
+          <div class="step-image-card">
+            <img class="card-bg-img" src="{{ url_for('static', filename='images/step6.jpg') }}" alt="Step 6 Background">
+          </div>
+          <div class="insight-box">
+            <div class="insight-header">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              Wawasan Klinis
+            </div>
+            <div class="insight-text">
+              HbA1c mencerminkan rata-rata gula darah Anda selama 3 bulan terakhir, sementara Gula Darah Puasa adalah
+              potret sesaat. Kadar HbA1c yang sehat umumnya berada di bawah 5.7%.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 7: Activity (Dummy) -->
+      <div id="step-7" class="step-layout hidden">
+        <div class="step-left">
+          <h2 class="step-title">Seberapa aktif Anda?</h2>
+          <p class="step-desc">Berikan informasi tentang tingkat aktivitas fisik Anda sehari-hari.</p>
+
+          <div class="list-options">
+            <div class="list-option" onclick="selectListOption('activity', 'RENDAH', this)">
+              <div class="list-icon">🛋️</div>
+              <div class="list-text-group">
+                <div class="list-text">Sedikit</div>
+                <div class="list-subtext">Jarang beraktifitas</div>
+              </div>
+              <div class="list-radio"></div>
+            </div>
+            <div class="list-option" onclick="selectListOption('activity', 'SEDANG', this)">
+              <div class="list-icon">🚶</div>
+              <div class="list-text-group">
+                <div class="list-text">Sedang</div>
+                <div class="list-subtext">Rutin beraktifitas</div>
+              </div>
+              <div class="list-radio"></div>
+            </div>
+            <div class="list-option" onclick="selectListOption('activity', 'AKTIF', this)">
+              <div class="list-icon">🏋️</div>
+              <div class="list-text-group">
+                <div class="list-text">Aktif</div>
+                <div class="list-subtext">Rutin Olahraga</div>
+              </div>
+              <div class="list-radio"></div>
+            </div>
+          </div>
+          <input type="hidden" id="activity" value="">
+
+          <div class="step-nav">
+            <button class="btn-secondary" onclick="prevStep()">Kembali</button>
+            <button class="btn-primary" onclick="nextStep()" id="btn-next-7" disabled>Selanjutnya</button>
+          </div>
+        </div>
+        <div class="step-right">
+          <div class="step-image-card">
+            <img class="card-bg-img" src="{{ url_for('static', filename='images/step7.jpg') }}" alt="Step 7 Background">
+          </div>
+          <div class="insight-box">
+            <div class="insight-header">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              Wawasan Klinis
+            </div>
+            <div class="insight-text">
+              Aktivitas fisik yang teratur membantu sel tubuh Anda menggunakan insulin dengan lebih efektif (mengurangi
+              resistensi insulin).
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 8: Diet & Alcohol (Dummy) -->
+      <div id="step-8" class="step-layout hidden">
+        <div class="step-left">
+          <h2 class="step-title">Bagaimana pola hidup Anda?</h2>
+          <p class="step-desc">Informasi tentang pola makan dan kebiasaan konsumsi alkohol membantu kami menilai profil
+            metabolik Anda.</p>
+
+          <div class="question-card">
+            <div class="question-text" style="margin-bottom: 16px;">Apakah Anda rutin mengonsumsi sayur dan buah setiap
+              hari?</div>
+            <div class="inline-options">
+              <div class="inline-btn" onclick="selectInlineOption('diet', 1, this)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                Ya
+              </div>
+              <div class="inline-btn" onclick="selectInlineOption('diet', 0, this)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="15" y1="9" x2="9" y2="15"></line>
+                  <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+                Tidak
+              </div>
+            </div>
+            <input type="hidden" id="diet" value="">
+          </div>
+
+          <div class="question-card">
+            <div class="question-text" style="margin-bottom: 16px;">Frekuensi konsumsi alkohol</div>
+            <div class="list-options">
+              <div class="list-option" style="padding: 16px;" onclick="selectListOption('alcohol', 'never', this)">
+                <div class="list-icon" style="font-size: 20px;">💧</div>
+                <div class="list-text" style="font-size: 14px;">Tidak Pernah</div>
+              </div>
+              <div class="list-option" style="padding: 16px;" onclick="selectListOption('alcohol', 'rare', this)">
+                <div class="list-icon" style="font-size: 20px;">🍸</div>
+                <div class="list-text" style="font-size: 14px;">Jarang <span
+                    style="color:var(--muted); font-size:12px;">(1-2 kali/bulan)</span></div>
+              </div>
+              <div class="list-option" style="padding: 16px;" onclick="selectListOption('alcohol', 'often', this)">
+                <div class="list-icon" style="font-size: 20px;">🍻</div>
+                <div class="list-text" style="font-size: 14px;">Sering <span
+                    style="color:var(--muted); font-size:12px;">(>1 kali/minggu)</span></div>
+              </div>
+            </div>
+            <input type="hidden" id="alcohol" value="">
+          </div>
+
+          <div class="step-nav">
+            <button class="btn-secondary" onclick="prevStep()">Kembali</button>
+            <button class="btn-primary" onclick="nextStep()" id="btn-next-8" disabled>
+              Selanjutnya
+            </button>
+          </div>
+        </div>
+        <div class="step-right">
+          <div class="step-image-card">
+            <img class="card-bg-img" src="{{ url_for('static', filename='images/step8.jpg') }}" alt="Step 8 Background">
+          </div>
+          <div class="insight-box">
+            <div class="insight-header">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+              Wawasan Klinis
+            </div>
+            <div class="insight-text">
+              Pola makan kaya serat dan pembatasan alkohol secara signifikan menurunkan beban kerja pankreas dan menjaga
+              sensitivitas insulin.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 9: Mental Health & Wellbeing -->
+      <div id="step-9" class="step-layout hidden">
+        <div class="step-left">
+          <h2 class="step-title">Kesehatan Mental & Kesejahteraan</h2>
+          <p class="step-desc">Kesehatan mental dan tingkat stres Anda berdampak langsung pada regulasi hormon dan
+            metabolisme glukosa.</p>
+
+          <div class="question-card">
+            <div class="question-text" style="margin-bottom: 16px; font-size: 18px;">Apakah Anda sering merasa tertekan,
+              cemas, atau sangat stres dalam 3 bulan terakhir?</div>
+            <div class="inline-options">
+              <div class="inline-btn" onclick="selectInlineOption('stress', 1, this)">Ya</div>
+              <div class="inline-btn" onclick="selectInlineOption('stress', 0, this)">Tidak</div>
+            </div>
+            <input type="hidden" id="stress" value="">
+          </div>
+
+          <div class="question-card">
+            <div class="question-text" style="margin-bottom: 16px; font-size: 18px;">Berapa rata-rata durasi tidur Anda
+              setiap malam?</div>
+            <div class="square-options">
+              <div class="square-btn" onclick="selectSquareOption('sleep', 'short', this)">
+                <div class="square-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"></path>
+                  </svg></div>
+                <div class="square-text">Kurang dari 6 jam</div>
+              </div>
+              <div class="square-btn" onclick="selectSquareOption('sleep', 'normal', this)">
+                <div class="square-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"></path>
+                  </svg></div>
+                <div class="square-text">6-8 jam</div>
+              </div>
+              <div class="square-btn" onclick="selectSquareOption('sleep', 'long', this)">
+                <div class="square-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"></path>
+                  </svg></div>
+                <div class="square-text">Lebih dari 8 jam</div>
+              </div>
+            </div>
+            <input type="hidden" id="sleep" value="">
+          </div>
+
+          <div class="step-nav">
+            <button class="btn-secondary" onclick="prevStep()">Kembali</button>
+            <button class="btn-primary" onclick="submitPredict()" id="btn-predict" disabled>
+              Selanjutnya
+            </button>
+          </div>
+        </div>
+        <div class="step-right">
+          <div class="step-image-card">
+            <img class="card-bg-img" src="{{ url_for('static', filename='images/step9.jpg') }}" alt="Step 9 Background">
+          </div>
+          <div class="insight-box">
+            <div class="insight-header">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2a10 10 0 1 0 10 10H12V2z"></path>
+                <path d="M12 2a10 10 0 0 1 10 10"></path>
+              </svg>
+              Wawasan Klinis
+            </div>
+            <div class="insight-text">
+              Stres kronis meningkatkan kadar kortisol, yang dapat menyebabkan resistensi insulin dan lonjakan gula
+              darah. Tidur yang cukup sangat penting bagi tubuh untuk meregulasi metabolisme glukosa secara alami.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Result View (New Layout) -->
+    <div id="step-result" class="hidden result-view-container">
+      <div class="result-header-text">
+        <h2 class="result-main-title">Hasil Analisis Risiko Anda</h2>
+        <p class="result-main-desc">Berdasarkan data medis dan gaya hidup yang Anda berikan.</p>
+      </div>
+
+      <div class="result-layout">
+        <div class="result-left">
+          <div class="step-image-card result-image">
+            <img class="card-bg-img" id="result-bg-img"
+              src="{{ url_for('static', filename='images/result_banner.jpg') }}" alt="Result Background">
+          </div>
+          <div class="key-factors-card">
+            <h3>Faktor Utama</h3>
+            <div class="factor-item">
+              <div class="factor-label"><span class="factor-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                  </svg>
+                </span> Indeks Massa Tubuh</div>
+              <div class="factor-val" id="res-bmi">26.5</div>
+            </div>
+            <div class="factor-item">
+              <div class="factor-label"><span class="factor-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                  </svg>
+                </span> Gula Darah Puasa</div>
+              <div class="factor-val" id="res-glucose">108 <span class="unit">mg/dL</span></div>
+            </div>
+            <div class="factor-item" style="border-bottom: none;">
+              <div class="factor-label"><span class="factor-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                </span> Aktivitas Fisik</div>
+              <div class="factor-val badge-val" id="res-activity">RENDAH</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-right">
+          <div class="gauge-card">
+            <div class="gauge-header">TINGKAT RISIKO DIABETES</div>
+            <div class="gauge-chart-container">
+              <svg viewBox="0 0 200 110" class="gauge-svg">
+                <!-- Background track (gray arc) -->
+                <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="var(--surface-light)" stroke-width="16" stroke-linecap="round"/>
+                <!-- Filled arc (colored, animated) -->
+                <path id="gauge-path" d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="var(--accent)" stroke-width="16" stroke-linecap="round" stroke-dasharray="251.33" stroke-dashoffset="251.33"/>
+              </svg>
+            </div>
+            <div class="gauge-value" id="result-label">Risiko Sedang</div>
+            <p class="gauge-desc" id="result-desc">Anda memiliki kemungkinan menengah untuk mengembangkan diabetes tipe
+              2 dalam 10 tahun ke depan. Tindakan pencegahan direkomendasikan.</p>
+          </div>
+
+          <div class="recommendation-card">
+            <div class="rec-header">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 16v-4"></path>
+                <path d="M12 8h.01"></path>
+              </svg>
+              Rekomendasi Personal
+            </div>
+            <div class="rec-grid" id="saran-container">
+              <!-- dynamic from JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-actions">
+        <button class="btn-secondary" onclick="location.reload()" style="gap: 8px; display:flex; align-items:center; margin: 0 auto;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          Kembali ke Beranda
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    let currentStep = 0;
+    const totalSteps = 9;
+
+    function checkStepValidity(step) {
+      if (step === 1) return document.getElementById('gender').value !== '';
+      if (step === 4) return document.getElementById('smoking_history').value !== '';
+      if (step === 5) return document.getElementById('hypertension').value !== '' && document.getElementById('heart_disease').value !== '';
+      if (step === 7) return document.getElementById('activity').value !== '';
+      if (step === 8) return document.getElementById('diet').value !== '' && document.getElementById('alcohol').value !== '';
+      if (step === 9) return document.getElementById('stress').value !== '' && document.getElementById('sleep').value !== '';
+      return true;
+    }
+
+    function updateNextButton() {
+      const btn = document.getElementById(`btn-next-${currentStep}`);
+      if (btn) {
+        btn.disabled = !checkStepValidity(currentStep);
+      }
+      if (currentStep === 9) {
+        document.getElementById('btn-predict').disabled = !checkStepValidity(currentStep);
+      }
+    }
+
+    function nextStep() {
+      if (currentStep === 0) {
+        document.getElementById('view-0').classList.add('hidden');
+        document.getElementById('wizard').classList.add('active');
+        document.getElementById('save-exit-btn').classList.remove('hidden');
+      } else {
+        document.getElementById(`step-${currentStep}`).classList.add('hidden');
+      }
+      currentStep++;
+      if (currentStep <= totalSteps) {
+        document.getElementById(`step-${currentStep}`).classList.remove('hidden');
+        updateProgress();
+        updateNextButton();
+      }
+    }
+
+    function prevStep() {
+      document.getElementById(`step-${currentStep}`).classList.add('hidden');
+      currentStep--;
+      if (currentStep === 0) {
+        document.getElementById('wizard').classList.remove('active');
+        document.getElementById('view-0').classList.remove('hidden');
+        document.getElementById('save-exit-btn').classList.add('hidden');
+      } else {
+        document.getElementById(`step-${currentStep}`).classList.remove('hidden');
+        updateProgress();
+      }
+    }
+
+    function updateProgress() {
+      const pct = Math.round((currentStep / totalSteps) * 100);
+      document.getElementById('step-label').textContent = `LANGKAH ${currentStep} DARI ${totalSteps}`;
+      document.getElementById('step-pct').textContent = `${pct}%`;
+      document.getElementById('progress-fill').style.width = `${pct}%`;
+    }
+
+    function updateSlider(id, val) {
+      const el = document.getElementById(`${id}-val`);
+      if (!el.querySelector('input')) el.textContent = val;
+    }
+
+    function updateSliderCard(id, val, unit) {
+      const el = document.getElementById(`${id}-val`);
+      if (!el.querySelector('input')) el.textContent = val + unit;
+    }
+
+    // Klik angka untuk mengetik nilai secara manual
+    function makeEditable(el, sliderId, min, max, decimals, unit) {
+      if (el.querySelector('input')) return; // sudah dalam mode edit
+      const currentText = el.textContent.replace(unit, '').trim();
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.className = 'inline-number-input';
+      input.value = currentText;
+      input.min = min;
+      input.max = max;
+      if (decimals > 0) input.step = Math.pow(10, -decimals).toString();
+      el.textContent = '';
+      el.appendChild(input);
+      input.focus();
+      input.select();
+
+      function commit() {
+        let val = parseFloat(input.value);
+        if (isNaN(val)) val = min;
+        val = Math.min(max, Math.max(min, val));
+        if (decimals > 0) val = val.toFixed(decimals);
+        else val = Math.round(val);
+        el.textContent = val + unit;
+        const slider = document.getElementById(sliderId);
+        if (slider) {
+          slider.value = val;
+          slider.dispatchEvent(new Event('input'));
+        }
+      }
+
+      input.addEventListener('blur', commit);
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+        if (e.key === 'Escape') { input.value = currentText; input.blur(); }
+      });
+    }
+
+    function selectOption(id, val, btn) {
+      document.getElementById(id).value = val;
+      const siblings = btn.parentElement.querySelectorAll('.option-btn');
+      siblings.forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      updateNextButton();
+    }
+
+    function selectInlineOption(id, val, btn) {
+      document.getElementById(id).value = val;
+      const siblings = btn.parentElement.querySelectorAll('.inline-btn');
+      siblings.forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      updateNextButton();
+    }
+
+    function selectListOption(id, val, btn) {
+      document.getElementById(id).value = val;
+      const siblings = btn.parentElement.querySelectorAll('.list-option');
+      siblings.forEach(s => {
+        s.classList.remove('active');
+        const radio = s.querySelector('.list-radio');
+        if (radio) radio.classList.remove('active');
+      });
+      btn.classList.add('active');
+      const radio = btn.querySelector('.list-radio');
+      if (radio) radio.classList.add('active');
+      updateNextButton();
+    }
+
+    function selectSquareOption(id, val, btn) {
+      document.getElementById(id).value = val;
+      const siblings = btn.parentElement.querySelectorAll('.square-btn');
+      siblings.forEach(s => s.classList.remove('active'));
+      btn.classList.add('active');
+      updateNextButton();
+    }
+
+    // Dynamic slider styling
+    document.querySelectorAll('input[type=range]').forEach(input => {
+      input.addEventListener('input', function () {
+        const value = (this.value - this.min) / (this.max - this.min) * 100;
+        this.style.background = `linear-gradient(to right, var(--accent) 0%, var(--accent) ${value}%, var(--surface-light) ${value}%, var(--surface-light) 100%)`;
+      });
+      input.dispatchEvent(new Event('input'));
+    });
+
+    async function submitPredict() {
+      document.getElementById(`step-${currentStep}`).classList.add('hidden');
+      document.getElementById('wizard').classList.remove('active'); // Hide wizard entirely
+      document.getElementById('step-result').classList.remove('hidden');
+      document.getElementById('save-exit-btn').classList.add('hidden');
+
+      const btn = document.getElementById('btn-predict');
+      btn.disabled = true;
+
+      // Ensure dummy values defaults if not set so backend doesn't break
+      const smoke_hist = document.getElementById('smoking_history').value || 'never';
+      const bmi_val = document.getElementById('bmi').value;
+      const glucose_val = document.getElementById('blood_glucose_level').value;
+      const activity_val = document.getElementById('activity').value || 'SEDANG';
+
+      // Update factor items in UI
+      document.getElementById('res-bmi').textContent = bmi_val;
+      document.getElementById('res-glucose').innerHTML = glucose_val + ' <span class="unit">mg/dL</span>';
+      document.getElementById('res-activity').textContent = activity_val;
+
+      const payload = {
+        gender: document.getElementById('gender').value,
+        age: document.getElementById('age').value,
+        hypertension: document.getElementById('hypertension').value,
+        heart_disease: document.getElementById('heart_disease').value,
+        smoking_history: smoke_hist,
+        bmi: bmi_val,
+        HbA1c_level: document.getElementById('HbA1c_level').value,
+        blood_glucose_level: glucose_val,
+        activity: document.getElementById('activity').value || 'SEDANG',
+        diet: document.getElementById('diet').value || '',
+        alcohol: document.getElementById('alcohol').value || 'never',
+        stress: document.getElementById('stress').value || '',
+        sleep: document.getElementById('sleep').value || 'normal',
+      };
+
+      try {
+        const res = await fetch('/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        showResult(data);
+      } catch (err) {
+        showResult({
+          label: 'Error',
+          confidence: 'N/A',
+          risiko: 0,
+          saran: [{ ikon: '❌', judul: 'Koneksi Gagal', teks: 'Terjadi kesalahan saat menghubungi server.' }]
+        });
+      }
+    }
+
+    function showResult(data) {
+      const label = document.getElementById('result-label');
+      const desc = document.getElementById('result-desc');
+      const saranContainer = document.getElementById('saran-container');
+
+      const pct = parseFloat(data.confidence) || 0;
+
+      let title = "";
+      let descText = "";
+      let color = "";
+      let resultImage = "";
+
+      if (pct <= 20) {
+        title = "Risiko Sangat Rendah";
+        color = "#10b981"; // Emerald Green
+        descText = "Hasil analisis menunjukkan tingkat risiko sangat rendah. Tetap jaga pola makan sehat dan gaya hidup aktif.";
+        resultImage = "result_normal.jpg";
+      } else if (pct <= 40) {
+        title = "Risiko Rendah";
+        color = "#84cc16"; // Lime Green
+        descText = "Ada indikasi faktor risiko ringan, namun secara umum masih terkendali. Lakukan pencegahan dengan aktif bergerak dan menjaga pola makan.";
+        resultImage = "result_rendah.jpg";
+      } else if (pct <= 60) {
+        title = "Risiko Menengah";
+        color = "#f59e0b"; // Amber Orange
+        descText = "Beberapa faktor risiko Anda menunjukkan angka menengah. Disarankan untuk mulai memperbaiki gaya hidup, pola makan, dan olahraga rutin.";
+        resultImage = "result_tinggi.jpg";
+      } else if (pct <= 80) {
+        title = "Risiko Tinggi";
+        color = "#ea580c"; // Dark Orange
+        descText = "Kondisi Anda menunjukkan tingkat risiko tinggi. Sangat disarankan untuk membatasi konsumsi gula, rutin olahraga, dan berkonsultasi dengan dokter.";
+        resultImage = "result_prediabetes.jpg";
+      } else {
+        title = "Risiko Sangat Tinggi (Kritis)";
+        color = "#ef4444"; // Red
+        descText = "Hasil analisis menunjukkan probabilitas sangat tinggi (kritis). Harap segera berkonsultasi dengan dokter untuk pemeriksaan klinis formal.";
+        resultImage = "result_diabetes.jpg";
+      }
+
+      // Animate SVG gauge arc
+      const gaugePath = document.getElementById('gauge-path');
+      const arcLength = 251.33; // half-circumference of r=80
+      const offset = arcLength * (1 - pct / 100);
+      gaugePath.style.transition = 'stroke-dashoffset 1.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
+      gaugePath.setAttribute('stroke-dashoffset', offset);
+      gaugePath.setAttribute('stroke', color);
+
+      label.textContent = title + " (" + data.confidence + ")";
+      label.style.color = color;
+      desc.textContent = descText;
+
+      // Update Result Image dynamically
+      const resultImgEl = document.getElementById('result-bg-img');
+      if (resultImgEl && resultImage) {
+        resultImgEl.src = "/static/images/" + resultImage;
+      }
+
+      // Build Recommendation Cards
+      if (data.saran && data.saran.length > 0) {
+        saranContainer.innerHTML = data.saran.map(s => `
+          <div class="rec-card">
+            <div class="rec-icon" style="background: rgba(255,255,255,0.05);">${s.ikon}</div>
+            <div class="rec-content">
+              <h4>${s.judul}</h4>
+              <p>${s.teks}</p>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        saranContainer.innerHTML = '<p>Tidak ada rekomendasi khusus saat ini.</p>';
+      }
+    }
+
+    function handleSaveExit() {
+      // Refresh the page to reset the state back to the landing page
+      location.reload();
+    }
+
+
+
+
+  </script>
+</body>
+
+</html>
