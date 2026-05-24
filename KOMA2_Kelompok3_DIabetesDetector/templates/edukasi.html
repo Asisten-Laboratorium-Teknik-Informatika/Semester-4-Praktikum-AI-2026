@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DiabetesRisk — Edukasi Diabetes</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+  <div class="wrapper">
+    <header>
+      <div class="badge">Edukasi Kesehatan</div>
+      <div class="logo">
+        <h1>Pusat<span>Edukasi</span></h1>
+        <p class="subtitle">Pahami apa itu diabetes, kenali risikonya, dan pelajari cara pencegahan terbaik untuk hidup sehat.</p>
+      </div>
+      <div class="nav-links">
+        <a href="{{ url_for('home') }}">Beranda & Prediksi</a>
+        <a href="{{ url_for('edukasi') }}" class="active">Pusat Edukasi</a>
+      </div>
+    </header>
+
+    <div class="card">
+      <div class="card-title">Apa itu Diabetes?</div>
+      <div class="edu-content">
+        <p><strong>Diabetes Melitus</strong> adalah penyakit kronis yang ditandai dengan tingginya kadar gula (glukosa) di dalam darah. Glukosa merupakan sumber energi utama bagi sel tubuh manusia, yang diserap dari makanan dengan bantuan hormon insulin yang diproduksi oleh pankreas.</p>
+        <p>Pada penderita diabetes, pankreas tidak memproduksi cukup insulin, atau sel-sel tubuh tidak merespons insulin dengan baik (resistensi insulin). Akibatnya, glukosa menumpuk di dalam darah dan tidak dapat mencapai sel-sel tubuh, yang pada akhirnya dapat merusak organ-organ penting seperti jantung, ginjal, saraf, dan mata.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Faktor Risiko Utama</div>
+      <div class="edu-content">
+        <p>Beberapa kondisi dan kebiasaan dapat meningkatkan peluang seseorang terkena diabetes tipe 2, antara lain:</p>
+        <ul>
+          <li><strong>Kelebihan Berat Badan (Obesitas):</strong> Merupakan faktor risiko paling dominan. Semakin banyak jaringan lemak (terutama di area perut), semakin tinggi tingkat resistensi sel tubuh terhadap insulin.</li>
+          <li><strong>Gaya Hidup Sedentari (Kurang Gerak):</strong> Kurangnya aktivitas fisik membuat tubuh kurang efisien dalam menggunakan glukosa sebagai energi.</li>
+          <li><strong>Riwayat Keluarga:</strong> Risiko akan meningkat secara signifikan jika orang tua atau saudara kandung memiliki riwayat menderita diabetes.</li>
+          <li><strong>Usia:</strong> Risiko diabetes tipe 2 umumnya meningkat seiring bertambahnya usia, terutama setelah menginjak usia 45 tahun, meskipun saat ini kasus pada usia muda semakin sering terjadi.</li>
+          <li><strong>Tekanan Darah Tinggi (Hipertensi):</strong> Hipertensi memiliki korelasi yang sangat kuat dengan kondisi sindrom metabolik dan resistensi insulin.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Langkah Pencegahan</div>
+      <div class="edu-content">
+        <p>Diabetes tipe 2 sebagian besar dapat dicegah dengan menerapkan gaya hidup sehat sedini mungkin. Berikut adalah langkah krusial yang bisa Anda lakukan:</p>
+        <ul>
+          <li><strong>Jaga Berat Badan Ideal:</strong> Menurunkan berat badan setidaknya 5-10% dari total berat badan Anda dapat secara drastis mengurangi risiko terkena diabetes.</li>
+          <li><strong>Rutin Berolahraga:</strong> Lakukan aktivitas fisik intensitas sedang seperti jalan cepat, bersepeda, senam, atau berenang selama minimal 30 menit sehari (atau 150 menit dalam seminggu).</li>
+          <li><strong>Terapkan Pola Makan Sehat:</strong> Kurangi konsumsi gula harian dan karbohidrat olahan. Perbanyak asupan sayuran, buah-buahan, protein tanpa lemak, serta karbohidrat kompleks/biji-bijian utuh.</li>
+          <li><strong>Berhenti Merokok:</strong> Rokok dapat meningkatkan resistensi insulin, mengganggu metabolisme, serta memicu berbagai komplikasi kardiovaskular kronis.</li>
+          <li><strong>Pemeriksaan Kesehatan Rutin:</strong> Pantau secara berkala kadar glukosa darah (Gula Darah Puasa dan HbA1c), kolesterol, serta tekanan darah Anda, terutama jika Anda memiliki faktor risiko tinggi.</li>
+        </ul>
+      </div>
+    </div>
+
+    <footer>
+      DiabetesRisk · Kelompok 3 A2 · <span>Praktikum Kecerdasan Buatan</span>
+    </footer>
+  </div>
+</body>
+
+</html>
