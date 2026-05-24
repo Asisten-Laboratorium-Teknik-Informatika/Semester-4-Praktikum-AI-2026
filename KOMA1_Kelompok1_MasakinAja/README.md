@@ -77,7 +77,7 @@ Sebelum menjalankan aplikasi, pastikan sudah menginstal:
 2. pip
 3. Virtual environment (opsional)
 
-##📦 Instalasi Dependensi
+## 📦 Instalasi Dependensi
 
 Buka terminal atau Command Prompt di dalam folder project, lalu jalankan:
 ```bash
