@@ -103,7 +103,6 @@ streamlit run app.py
 Tunggu beberapa saat hingga browser terbuka otomatis.
 Jika tidak terbuka otomatis, akses:
 ```bash
-```bash
 pip install -r requirements.txt
 ```
 
@@ -115,7 +114,7 @@ pip install -r requirements.txt
 5. Jika memilih ikan, pilih jenis ikan
 6. Sistem akan menampilkan rekomendasi resep secara otomatis
 
-🧠 Model AI
+## 🧠 Model AI
 
 Model AI menggunakan:
 1. MobileNetV2 (Transfer Learning)
