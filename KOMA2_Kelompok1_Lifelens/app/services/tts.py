@@ -50,6 +50,8 @@ except ImportError:
 _chatterbox_available = False
 _chatterbox_turbo_available = False
 _chatterbox_import_attempted = False
+_chatterbox_vc_available = False
+_chatterbox_vc_import_attempted = False
 _chatterbox_model = None
 _chatterbox_vc_model = None
 _chatterbox_is_turbo = False
@@ -389,6 +391,42 @@ def _ensure_chatterbox_imports() -> bool:
         return False
 
 
+def _ensure_chatterbox_vc_imports() -> bool:
+    """Import only the voice-conversion path; avoids slow ChatterboxTTS import."""
+    global ChatterboxVC, _chatterbox_vc_available, _chatterbox_vc_import_attempted
+    global torch, torchaudio
+
+    if _chatterbox_vc_available:
+        return True
+    if _chatterbox_vc_import_attempted:
+        return False
+
+    _chatterbox_vc_import_attempted = True
+    t0 = time.perf_counter()
+    try:
+        if torch is None:
+            _log_tts("chatterbox-vc-import", "import torch start")
+            import torch as _torch
+            torch = _torch
+            _log_tts("chatterbox-vc-import", f"import torch done elapsed={(time.perf_counter() - t0) * 1000:.0f}ms")
+
+        if torchaudio is None:
+            _log_tts("chatterbox-vc-import", "import torchaudio start")
+            import torchaudio as _torchaudio
+            torchaudio = _torchaudio
+            _log_tts("chatterbox-vc-import", f"import torchaudio done elapsed={(time.perf_counter() - t0) * 1000:.0f}ms")
+
+        _log_tts("chatterbox-vc-import", "import ChatterboxVC start")
+        from chatterbox.vc import ChatterboxVC as _ChatterboxVC
+        ChatterboxVC = _ChatterboxVC
+        _chatterbox_vc_available = True
+        _log_tts("chatterbox-vc-import", f"import ChatterboxVC done elapsed={(time.perf_counter() - t0) * 1000:.0f}ms")
+        return True
+    except ImportError as e:
+        _log_tts("chatterbox-vc-import", f"import error: {e}")
+        return False
+
+
 def _init_chatterbox():
     """Lazy-load Chatterbox model to GPU."""
     global _chatterbox_is_turbo, _chatterbox_model
@@ -433,7 +471,7 @@ def _init_chatterbox_vc():
     """Lazy-load Chatterbox voice conversion model."""
     global _chatterbox_vc_model
     t0 = time.perf_counter()
-    if not _ensure_chatterbox_imports():
+    if not _ensure_chatterbox_vc_imports():
         return None
     if _chatterbox_vc_model is None:
         try:

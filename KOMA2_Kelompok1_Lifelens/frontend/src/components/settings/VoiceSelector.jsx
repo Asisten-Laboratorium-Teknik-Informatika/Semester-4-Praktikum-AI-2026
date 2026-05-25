@@ -1,11 +1,10 @@
 /**
- * VoiceSelector — Pilih suara RINA (ID / JP / EN / KR).
- * Dengan preview button untuk dengarkan sample sebelum pilih.
+ * VoiceSelector — Pilih bahasa suara RINA.
+ * Chat TTS dimatikan sementara, tapi preview tetap play file audio statis.
  */
-import { useState, useRef } from 'react'
+import { useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Volume2, Check, Loader, Globe } from 'lucide-react'
-import { chatApi } from '../../services/api'
+import { Volume2, VolumeX, Check, Globe } from 'lucide-react'
 import useUserStore from '../../store/userStore'
 
 const VOICE_OPTIONS = [
@@ -15,6 +14,7 @@ const VOICE_OPTIONS = [
     flag: 'ID',
     description: 'Clone referensi Indonesia',
     sample: 'Hai, aku Rina. Hari ini rasanya gimana?',
+    sampleAudio: '/assets/audio/sample_id.wav',
   },
   {
     lang: 'ja',
@@ -22,6 +22,7 @@ const VOICE_OPTIONS = [
     flag: 'JP',
     description: 'Clone referensi Hu Tao Jepang',
     sample: 'Konnichiwa, Rina desu. Kyou wa donna ichinichi datta?',
+    sampleAudio: '/assets/audio/sample_ja.wav',
   },
   // Bahasa EN dan KO disembunyikan sementara sesuai request
 ]
@@ -29,36 +30,36 @@ const VOICE_OPTIONS = [
 export default function VoiceSelector({ compact = false }) {
   const voiceLang = useUserStore((s) => s.voiceLang)
   const setVoiceLang = useUserStore((s) => s.setVoiceLang)
-  const [previewing, setPreviewing] = useState(null) // lang being previewed
+  const [previewing, setPreviewing] = useState(null)
   const audioRef = useRef(null)
 
-  const handlePreview = async (lang, sampleText) => {
-    if (previewing === lang) return
-
-    // Stop current audio
+  const stopPreview = () => {
     if (audioRef.current) {
       audioRef.current.pause()
+      audioRef.current.currentTime = 0
       audioRef.current = null
     }
+    setPreviewing(null)
+  }
 
+  const handlePreview = async (lang, sampleText, sampleAudio) => {
+    if (previewing === lang) {
+      stopPreview()
+      return
+    }
+
+    stopPreview()
     setPreviewing(lang)
+
     try {
-      const { data: blob } = await chatApi.tts(sampleText, 'neutral', lang)
-      const url = URL.createObjectURL(blob)
-      const audio = new Audio(url)
-
-      audio.onended = () => {
-        setPreviewing(null)
-        URL.revokeObjectURL(url)
-      }
-      audio.onerror = () => {
-        setPreviewing(null)
-        URL.revokeObjectURL(url)
-      }
-
+      console.info('[TTS UI] static preview play', { lang, chars: sampleText.length, sampleAudio })
+      const audio = new Audio(sampleAudio)
       audioRef.current = audio
+      audio.onended = () => setPreviewing(null)
+      audio.onerror = () => setPreviewing(null)
       await audio.play()
-    } catch {
+    } catch (err) {
+      console.warn('[TTS UI] static preview failed', { lang, err })
       setPreviewing(null)
     }
   }
@@ -184,7 +185,7 @@ export default function VoiceSelector({ compact = false }) {
               whileTap={{ scale: 0.85 }}
               onClick={(e) => {
                 e.stopPropagation()
-                handlePreview(opt.lang, opt.sample)
+                handlePreview(opt.lang, opt.sample, opt.sampleAudio)
               }}
               style={{
                 width: 32, height: 32, borderRadius: '50%',
@@ -197,7 +198,7 @@ export default function VoiceSelector({ compact = false }) {
               }}
               title={`Preview suara ${opt.label}`}
             >
-              {isPreviewing ? <Loader size={14} className="animate-spin" /> : <Volume2 size={14} />}
+              {isPreviewing ? <VolumeX size={14} /> : <Volume2 size={14} />}
             </motion.button>
           </motion.div>
         )
@@ -207,7 +208,7 @@ export default function VoiceSelector({ compact = false }) {
         fontSize: 11, color: 'var(--color-text-tertiary)',
         padding: '4px 0', marginTop: 4,
       }}>
-        Teks percakapan tetap dalam Bahasa Indonesia. Hanya suara yang berubah.
+        Preview memakai audio statis. TTS chat tetap dimatikan untuk demo.
       </div>
     </div>
   )

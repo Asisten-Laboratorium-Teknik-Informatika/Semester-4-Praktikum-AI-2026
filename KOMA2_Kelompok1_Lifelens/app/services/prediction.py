@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
+import os
 
 import joblib
 import numpy as np
@@ -181,8 +182,15 @@ def model_predict(features: dict[str, Any], user_text: str = "") -> dict[str, An
     scaler = assets["scaler"]
     tfidf = assets["tfidf"]
 
-    # Build base feature row
-    row_data = {col: _as_float(features, col, 0) for col in BASE_FEATURES}
+    # Base features default to 'healthy' values if missing, so new users start at LOW risk
+    default_baselines = {
+        "sleep_hours": 8.0, "sleep_quality": 8.0, "workload_score": 3.0,
+        "mood_score": 8.0, "social_score": 8.0, "recovery_score": 8.0,
+        "sentiment_score": 0.0, "cognitive_distortion_score": 0.0,
+        "absolutist_count": 0.0, "helplessness_count": 0.0,
+        "keyword_count": 0.0, "message_avg_length": 20.0
+    }
+    row_data = {col: _as_float(features, col, default_baselines.get(col, 0.0)) for col in BASE_FEATURES}
     df_row = pd.DataFrame([row_data])
 
     # Check jika model v4 (pakai TF-IDF + engineered features)
@@ -207,7 +215,7 @@ def model_predict(features: dict[str, Any], user_text: str = "") -> dict[str, An
     else:
         # Model v1/v2/v3 — base features only
         feature_names = list(getattr(scaler, "feature_names_in_", BASE_FEATURES))
-        row = pd.DataFrame([{name: features.get(name, 0) for name in feature_names}])
+        row = pd.DataFrame([{name: row_data.get(name, 0.0) for name in feature_names}])
         scaled = scaler.transform(row)
         predicted_class = int(model.predict(scaled)[0])
 
@@ -252,6 +260,9 @@ def explain_prediction(features: dict[str, Any], user_text: str = "") -> list[st
     Jelaskan kenapa level burnout ini diprediksi.
     Coba SHAP dulu (data-driven), fallback ke rule-based.
     """
+    if os.environ.get("LIFELENS_DISABLE_SHAP", "1") != "0":
+        return _rule_based_explain(features)
+
     try:
         return _shap_explain(features, user_text)
     except Exception:
@@ -376,4 +387,3 @@ def _rule_based_explain(features: dict[str, Any]) -> list[str]:
 
     explanations.sort(key=lambda item: item[0], reverse=True)
     return [text for _, text in explanations[:3]]
-

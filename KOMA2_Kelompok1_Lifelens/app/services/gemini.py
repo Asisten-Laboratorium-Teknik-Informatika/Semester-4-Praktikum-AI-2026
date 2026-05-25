@@ -1,4 +1,10 @@
+import asyncio
 import json, re, os
+import time
+from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 # Fallback if supabase client is not yet fully available
 try:
     from app.services.supabase_client import get_supabase_client
@@ -11,17 +17,42 @@ except ImportError:
 
 def get_gemini_keys() -> list[str]:
     keys = []
+    # Untuk demo: pakai key backup dulu supaya tidak kena quota key utama.
+    backup_key = (
+        os.environ.get("GEMINI_API_KEY_BACKUP")
+        or os.environ.get("gemini_api_key_backup")
+        or os.environ.get("GEMINI_API_KEY_DEMO")
+    )
+    if backup_key:
+        keys.append(backup_key)
+
     # Ambil key utama
     main_key = os.environ.get("GEMINI_API_KEY")
-    if main_key:
+    if main_key and main_key not in keys:
         keys.append(main_key)
     
     # Ambil key tambahan (2 sampai 5)
     for i in range(2, 6):
         k = os.environ.get(f"GEMINI_API_KEY_{i}")
-        if k:
+        if k and k not in keys:
             keys.append(k)
     return keys
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+CHAT_LOG_DIR = PROJECT_ROOT / "logs"
+CHAT_LOG_FILE = CHAT_LOG_DIR / "chat.log"
+
+
+def _log_chat(trace_id: str, message: str):
+    line = f"{time.strftime('%Y-%m-%d %H:%M:%S')} [CHAT:{trace_id}] {message}"
+    print(line, flush=True)
+    try:
+        CHAT_LOG_DIR.mkdir(parents=True, exist_ok=True)
+        with CHAT_LOG_FILE.open("a", encoding="utf-8") as f:
+            f.write(line + "\n")
+    except Exception:
+        pass
+
 
 _keys = get_gemini_keys()
 _current_key_index = 0
@@ -137,6 +168,26 @@ def _fallback_rina_response(message: str, risk_level: str = "LOW") -> tuple[str,
     text = message.lower()
     data = _extract_json("")
 
+    if any(phrase in text for phrase in ["kurang tidur", "begadang", "ngantuk", "susah tidur"]):
+        response = (
+            "duh, kurang tidur sambil banyak tekanan itu berat banget ||| "
+            "yang paling bikin kepikiran sekarang tugasnya, deadline, atau omongan dosen?"
+        )
+        data["emotion_tone"] = "concerned"
+        data["keywords"] = ["kurang tidur", "tekanan"]
+        data["summary"] = "User kurang tidur dan merasa banyak tekanan."
+        return response, data
+
+    if any(word in text for word in ["tugas", "dosen", "deadline", "kuliah", "kampus"]):
+        response = (
+            "waduh, tugas numpuk dari dosen emang bikin kepala penuh ||| "
+            "yang paling mepet deadline-nya tugas apa dulu?"
+        )
+        data["emotion_tone"] = "concerned"
+        data["keywords"] = ["tugas", "dosen"]
+        data["summary"] = "User tertekan karena tugas kuliah/dosen."
+        return response, data
+
     if any(word in text for word in ["capek", "cape", "lelah", "tired", "burnout"]):
         response = (
             "duh, capek banget ya kedengarannya ||| "
@@ -170,15 +221,53 @@ def _fallback_rina_response(message: str, risk_level: str = "LOW") -> tuple[str,
     return response, data
 
 
-async def get_rina_response(user_id: str, message: str, risk_level: str = "LOW") -> tuple[str, dict]:
+DEMO_SYSTEM_PROMPT = """
+Kamu RINA, cewek 22 tahun, teman curhat di LifeLens.
+Balas seperti chat manusia Indonesia yang santai, hangat, pendek, tidak formal.
+Jangan sebut AI, sistem, diagnosis, terapi, atau burnout kecuali user sebut duluan.
+Pakai 2 bubble dipisah dengan |||.
+Bubble 1 validasi perasaan user secara singkat.
+Bubble 2 wajib pertanyaan spesifik, bukan sekadar "kenapa".
+Max total 3 kalimat. Tidak boleh emoji.
+Output hanya teks chat RINA, tanpa JSON.
+Contoh:
+duh, capek banget ya kedengerannya ||| yang paling nguras hari ini apa, kerjaannya atau orang-orangnya?
+"""
+
+
+def _next_stream_chunk(iterator):
+    try:
+        return next(iterator)
+    except StopIteration:
+        return None
+
+
+async def get_rina_response(user_id: str, message: str, risk_level: str = "LOW", trace_id: str | None = None) -> tuple[str, dict]:
     """
     Kirim pesan ke Gemini, terima respons RINA + JSON data.
     Return: (rina_text, extracted_json)
     """
     global _current_key_index, _client
+    trace_id = trace_id or f"gemini-{int(time.time() * 1000):x}"
+    timeout_s = float(os.environ.get("LIFELENS_GEMINI_TIMEOUT_SECONDS", "15"))
+    max_key_attempts = int(os.environ.get("LIFELENS_GEMINI_MAX_RETRIES", "1"))
+    fast_demo = os.environ.get("LIFELENS_FAST_DEMO_CHAT", "0") != "0"
+    short_prompt = os.environ.get("LIFELENS_GEMINI_SHORT_PROMPT", "1") != "0"
+    model_name = os.environ.get("LIFELENS_GEMINI_MODEL", "gemini-2.5-flash")
+    started = time.perf_counter()
+    _log_chat(trace_id, f"gemini start model={model_name} risk={risk_level} keys={len(_keys)} max_attempts={max_key_attempts} timeout={timeout_s:g}s fast_demo={fast_demo} short_prompt={short_prompt} chars={len(message)}")
     
     # Ambil konteks user dari database
+    t_context = time.perf_counter()
     context = await _get_user_context(user_id)
+    _log_chat(trace_id, f"context ready elapsed={(time.perf_counter() - t_context) * 1000:.0f}ms")
+
+    if fast_demo:
+        _log_chat(trace_id, f"fast demo chat enabled; using local RINA fallback total={(time.perf_counter() - started) * 1000:.0f}ms")
+        _chat_history[user_id].append({"role": "User", "content": message})
+        response_text, data = _fallback_rina_response(message, risk_level)
+        _chat_history[user_id].append({"role": "RINA", "content": response_text})
+        return response_text, data
     
     # Format system prompt
     tone_instruction = ""
@@ -192,42 +281,57 @@ async def get_rina_response(user_id: str, message: str, risk_level: str = "LOW")
         _chat_history[user_id] = []
     
     current_chat_lines = []
-    for msg in _chat_history[user_id][-10:]:  # Ambil 10 pesan terakhir
+    for msg in _chat_history[user_id][-6:]:  # Ambil 6 pesan terakhir (3 user + 3 rina)
         current_chat_lines.append(f"{msg['role']}: {msg['content']}")
     current_chat_text = "\n".join(current_chat_lines) if current_chat_lines else "(Belum ada pesan sebelumnya)"
 
-    prompt = SYSTEM_PROMPT_TEMPLATE.format(
-        collected_status=context['collected_status'],
-        user_name=context['name'],
-        days_active=context['days_active'],
-        detected_themes=", ".join(context['themes']) or "belum ada",
-        current_tone=context['tone'],
-        conversation_history=context['history'],
-        current_chat=current_chat_text
-    ) + tone_instruction
+    if short_prompt:
+        prompt = DEMO_SYSTEM_PROMPT + tone_instruction
+    else:
+        prompt = SYSTEM_PROMPT_TEMPLATE.format(
+            collected_status=context['collected_status'],
+            user_name=context['name'],
+            days_active=context['days_active'],
+            detected_themes=", ".join(context['themes']) or "belum ada",
+            current_tone=context['tone'],
+            conversation_history=context['history'],
+            current_chat=current_chat_text
+        ) + tone_instruction
     
     # Kirim ke Gemini
     full_prompt = f"{prompt}\n\nUser: {message}\nRINA:"
     
     # Simpan pesan user ke memori
     _chat_history[user_id].append({"role": "User", "content": message})
+    _chat_history[user_id] = _chat_history[user_id][-10:]
     
     # Percobaan dengan kunci yang tersedia
-    max_retries = len(_keys)
-    last_error = None
-    
+    max_retries = min(len(_keys), max(1, max_key_attempts))
     for _ in range(max_retries):
         if not _client:
             _client = _get_client()
             
         if not _client:
+            _log_chat(trace_id, "gemini unavailable: no client/key; using fallback")
             return _fallback_rina_response(message, risk_level)
             
         try:
-            response = _client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=full_prompt
+            t_call = time.perf_counter()
+            from google.genai import types
+            generation_config = types.GenerateContentConfig(
+                temperature=0.75,
+                maxOutputTokens=int(os.environ.get("LIFELENS_GEMINI_MAX_OUTPUT_TOKENS", "256")),
             )
+            response = await asyncio.wait_for(
+                asyncio.to_thread(
+                    _client.models.generate_content,
+                    model=model_name,
+                    contents=full_prompt,
+                    config=generation_config,
+                ),
+                timeout=timeout_s,
+            )
+            _log_chat(trace_id, f"gemini response ok elapsed={(time.perf_counter() - t_call) * 1000:.0f}ms")
             full_text = response.text
             
             # Parse JSON dari respons
@@ -235,6 +339,15 @@ async def get_rina_response(user_id: str, message: str, risk_level: str = "LOW")
             
             # Bersihkan JSON dari teks yang ditampilkan ke user
             clean_text = re.sub(r'\[DATA:.*?:DATA\]', '', full_text, flags=re.DOTALL).strip()
+            if "|||" not in clean_text and "\n" in clean_text:
+                clean_text = " ||| ".join(
+                    part.strip()
+                    for part in clean_text.splitlines()
+                    if part.strip()
+                )
+
+            if len(clean_text) < 35 or "?" not in clean_text:
+                _log_chat(trace_id, f"gemini response short; keeping real Gemini output chars={len(clean_text)}")
             
             # Deteksi emotion dari respons untuk TTS
             emotion = _detect_response_emotion(clean_text, extracted_json)
@@ -242,19 +355,131 @@ async def get_rina_response(user_id: str, message: str, risk_level: str = "LOW")
             
             # Simpan respons RINA ke memori
             _chat_history[user_id].append({"role": "RINA", "content": clean_text})
-            
+            _log_chat(trace_id, f"gemini done total={(time.perf_counter() - started) * 1000:.0f}ms response_chars={len(clean_text)}")
             return clean_text, extracted_json
             
+        except asyncio.TimeoutError as e:
+            last_error = e
+            _log_chat(trace_id, f"gemini timeout after {timeout_s:g}s; trying next key/fallback")
+            _current_key_index = (_current_key_index + 1) % len(_keys)
+            _client = _get_client()
+            continue
         except Exception as e:
             last_error = e
-            print(f"API Key index {_current_key_index} bermasalah: {e}")
+            _log_chat(trace_id, f"gemini key index {_current_key_index} failed: {e}")
             # Ganti kunci ke index berikutnya
             _current_key_index = (_current_key_index + 1) % len(_keys)
             _client = _get_client()
-            print(f"Mencoba kunci berikutnya (index {_current_key_index})...")
+            _log_chat(trace_id, f"trying next key index {_current_key_index}")
     
-    print(f"[Gemini] All keys failed, using local fallback: {last_error}")
+    _log_chat(trace_id, f"all gemini keys failed; using fallback total={(time.perf_counter() - started) * 1000:.0f}ms error={last_error}")
     return _fallback_rina_response(message, risk_level)
+
+
+async def stream_rina_response(user_id: str, message: str, risk_level: str = "LOW", trace_id: str | None = None):
+    """Yield real Gemini text chunks for WebSocket demo, then a final metadata event."""
+    global _current_key_index, _client
+    trace_id = trace_id or f"gemini-stream-{int(time.time() * 1000):x}"
+    timeout_s = float(os.environ.get("LIFELENS_GEMINI_TIMEOUT_SECONDS", "15"))
+    fast_demo = os.environ.get("LIFELENS_FAST_DEMO_CHAT", "0") != "0"
+    short_prompt = os.environ.get("LIFELENS_GEMINI_SHORT_PROMPT", "1") != "0"
+    model_name = os.environ.get("LIFELENS_GEMINI_MODEL", "gemini-2.5-flash")
+    started = time.perf_counter()
+    _log_chat(trace_id, f"gemini stream start model={model_name} risk={risk_level} timeout={timeout_s:g}s fast_demo={fast_demo} short_prompt={short_prompt} chars={len(message)}")
+
+    context = await _get_user_context(user_id)
+
+    if fast_demo:
+        response_text, data = _fallback_rina_response(message, risk_level)
+        yield {"type": "text", "text": response_text}
+        yield {"type": "done", "text": response_text, "data": data}
+        return
+
+    tone_instruction = ""
+    if risk_level == "HIGH":
+        tone_instruction = "\nPERHATIAN: User ini memiliki tingkat stres/burnout SANGAT TINGGI. Berikan respons yang ekstra lembut, sangat suportif, dan tidak menuntut jawaban panjang. Hindari saran produktivitas. Validasi perasaannya secara mendalam."
+    elif risk_level == "MEDIUM":
+        tone_instruction = "\nPERHATIAN: User ini mulai menunjukkan tanda kelelahan/stres sedang. Tunjukkan empati, dorong untuk istirahat ringan tanpa menggurui."
+
+    if user_id not in _chat_history:
+        _chat_history[user_id] = []
+
+    if short_prompt:
+        prompt = DEMO_SYSTEM_PROMPT + tone_instruction
+    else:
+        current_chat_lines = []
+        for msg in _chat_history[user_id][-6:]:
+            current_chat_lines.append(f"{msg['role']}: {msg['content']}")
+        current_chat_text = "\n".join(current_chat_lines) if current_chat_lines else "(Belum ada pesan sebelumnya)"
+        prompt = SYSTEM_PROMPT_TEMPLATE.format(
+            collected_status=context['collected_status'],
+            user_name=context['name'],
+            days_active=context['days_active'],
+            detected_themes=", ".join(context['themes']) or "belum ada",
+            current_tone=context['tone'],
+            conversation_history=context['history'],
+            current_chat=current_chat_text
+        ) + tone_instruction
+
+    full_prompt = f"{prompt}\n\nUser: {message}\nRINA:"
+    _chat_history[user_id].append({"role": "User", "content": message})
+    _chat_history[user_id] = _chat_history[user_id][-10:]
+
+    if not _client:
+        _client = _get_client()
+    if not _client:
+        response_text, data = _fallback_rina_response(message, risk_level)
+        yield {"type": "text", "text": response_text}
+        yield {"type": "done", "text": response_text, "data": data}
+        return
+
+    try:
+        from google.genai import types
+        generation_config = types.GenerateContentConfig(
+            temperature=0.75,
+            maxOutputTokens=int(os.environ.get("LIFELENS_GEMINI_MAX_OUTPUT_TOKENS", "256")),
+        )
+        iterator = await asyncio.to_thread(
+            _client.models.generate_content_stream,
+            model=model_name,
+            contents=full_prompt,
+            config=generation_config,
+        )
+
+        chunks = []
+        first_chunk_logged = False
+        while True:
+            chunk = await asyncio.wait_for(asyncio.to_thread(_next_stream_chunk, iterator), timeout=timeout_s)
+            if chunk is None:
+                break
+            text = getattr(chunk, "text", None) or ""
+            if not text:
+                continue
+            if not first_chunk_logged:
+                first_chunk_logged = True
+                _log_chat(trace_id, f"gemini stream first chunk elapsed={(time.perf_counter() - started) * 1000:.0f}ms")
+            chunks.append(text)
+            yield {"type": "text", "text": text}
+
+        full_text = "".join(chunks)
+        extracted_json = _extract_json(full_text)
+        clean_text = re.sub(r'\[DATA:.*?:DATA\]', '', full_text, flags=re.DOTALL).strip()
+        
+        if not clean_text:
+            raise ValueError("Gemini returned JSON but no conversation text.")
+            
+        if "|||" not in clean_text and "\n" in clean_text:
+            clean_text = " ||| ".join(part.strip() for part in clean_text.splitlines() if part.strip())
+        emotion = _detect_response_emotion(clean_text, extracted_json)
+        extracted_json["emotion_tone"] = emotion
+        _chat_history[user_id].append({"role": "RINA", "content": clean_text})
+        _log_chat(trace_id, f"gemini stream done total={(time.perf_counter() - started) * 1000:.0f}ms response_chars={len(clean_text)}")
+        yield {"type": "done", "text": clean_text, "data": extracted_json}
+    except Exception as e:
+        _log_chat(trace_id, f"gemini stream failed; using fallback: {e}")
+        response_text, data = _fallback_rina_response(message, risk_level)
+        yield {"type": "text", "text": response_text}
+        yield {"type": "done", "text": response_text, "data": data}
 
 
 async def generate_proactive_message(user_id: str, days_inactive: int) -> str:

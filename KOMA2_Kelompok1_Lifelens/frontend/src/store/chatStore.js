@@ -98,17 +98,20 @@ const useChatStore = create((set, get) => ({
   connect: (userId) => {
     if (get().ws) return
 
-    const wsUrl = import.meta.env.VITE_WS_URL
-      ? `${import.meta.env.VITE_WS_URL}/api/chat/ws/${userId}`
-      : `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/api/chat/ws/${userId}`
+    const wsBase = import.meta.env.VITE_WS_URL || 'ws://127.0.0.1:8000'
+    const wsUrl = `${wsBase}/api/chat/ws/${userId}`
 
     const ws = new WebSocket(wsUrl)
     
     ws.onopen = () => {
+      console.info('[WS] connected', wsUrl)
       set({ isConnected: true, isTyping: false, _reconnectAttempts: 0 })
       // Clear any pending reconnect timer
       const timer = get()._reconnectTimer
       if (timer) { clearTimeout(timer); set({ _reconnectTimer: null }) }
+    }
+    ws.onerror = (event) => {
+      console.warn('[WS] error', wsUrl, event)
     }
     ws.onclose = (event) => {
       set({ isConnected: false, isTyping: false, ws: null })
@@ -236,10 +239,13 @@ const useChatStore = create((set, get) => ({
         }
 
         if (data.type === 'risk_update') {
+          const ext = data.extracted_data || {}
           set({
              riskLevel: data.risk_level || null,
              factors: data.top_factors || [],
-             recommendations: data.recommendations || []
+             recommendations: data.recommendations || [],
+             nlpData: ext.nlp || get().nlpData,
+             daysTracked: ext.features_tracked_days ?? get().daysTracked,
           })
         }
       } catch (err) {

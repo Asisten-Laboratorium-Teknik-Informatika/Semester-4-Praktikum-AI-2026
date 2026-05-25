@@ -71,6 +71,8 @@ http://127.0.0.1:5173
 
 ## 4. Mode Suara
 
+Untuk mode demo/presentasi, TTS dimatikan dari frontend supaya chat tidak macet menunggu generate suara.
+
 Default backend menjalankan chat tanpa warm-up TTS supaya RINA cepat bisa membalas chat.
 
 Jika ingin preload model voice clone saat backend start:
