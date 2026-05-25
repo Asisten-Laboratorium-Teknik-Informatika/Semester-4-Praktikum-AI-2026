@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deteksi Emosi — FaceMood AI</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body data-page="upload">
+
+  <div class="mood-transition-overlay" id="mood-overlay"></div>
+
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Menganalisis ekspresi wajah...</p>
+  </div>
+
+  <nav class="navbar">
+    <a href="/" class="navbar-brand">FaceMood AI</a>
+    <ul class="navbar-links">
+      <li><a href="/">Home</a></li>
+      <li><a href="/upload" class="active">Deteksi</a></li>
+    </ul>
+  </nav>
+
+  <div class="page-wrap">
+
+    <!-- Decorative blobs background -->
+    <div class="page-blobs" aria-hidden="true">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+    </div>
+
+    <!-- Decorative floating shapes -->
+    <div class="float-shapes" aria-hidden="true">
+      <svg class="fshape fshape-1" viewBox="0 0 80 80"><circle cx="40" cy="40" r="36" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="6 4"/></svg>
+      <svg class="fshape fshape-2" viewBox="0 0 60 60"><rect x="8" y="8" width="44" height="44" rx="14" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+      <svg class="fshape fshape-3" viewBox="0 0 70 70"><polygon points="35,5 65,55 5,55" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      <svg class="fshape fshape-4" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="25" cy="25" r="10" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+      <svg class="fshape fshape-5" viewBox="0 0 60 60"><line x1="10" y1="30" x2="50" y2="30" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="30" y1="10" x2="30" y2="50" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+
+    <div class="upload-layout">
+
+      <!-- HEADER AREA -->
+      <div class="upload-title-area">
+        <div class="upload-tag">
+          <span class="tag-dot"></span>
+          Deteksi Emosi
+        </div>
+        <h1 class="page-title">Deteksi <span class="page-title-accent">Emosimu</span></h1>
+        <p class="page-desc">Upload foto wajah atau gunakan kamera, dan biarkan AI membaca kondisi emosionalmu.</p>
+
+        <!-- Mode Toggle -->
+        <div class="mode-toggle">
+          <button class="mode-btn active" id="mode-upload-btn">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload Foto
+          </button>
+          <button class="mode-btn" id="mode-camera-btn">
+            <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            Gunakan Kamera
+          </button>
+        </div>
+      </div>
+
+      <!-- EMPTY RIGHT (for grid) -->
+      <div></div>
+
+      <!-- LEFT: Input area -->
+      <div class="upload-left">
+
+        <!-- Upload Zone -->
+        <div class="upload-zone" id="upload-zone">
+          <div class="upload-zone-deco">
+            <svg class="uz-ring" viewBox="0 0 160 160"><circle cx="80" cy="80" r="70" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="5 5" opacity="0.3"/></svg>
+          </div>
+          <div class="upload-zone-inner">
+            <div class="upload-icon-wrap">
+              <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <h3 class="upload-title">Seret foto ke sini</h3>
+            <p class="upload-hint">atau klik untuk memilih file (JPG, PNG)</p>
+            <button class="btn btn-primary" onclick="document.getElementById('file-input').click(); event.stopPropagation();">Pilih Foto</button>
+            <input type="file" id="file-input" accept="image/*" />
+          </div>
+        </div>
+
+        <!-- Camera Zone -->
+        <div class="camera-zone" id="camera-zone" style="display:none;">
+          <div class="camera-live-wrap">
+            <video id="camera-video" autoplay playsinline muted></video>
+            <canvas id="camera-canvas" style="display:none;"></canvas>
+            <div class="live-emotion-badge" id="live-emotion-badge">
+              <span class="live-dot"></span>
+              <span id="live-emotion-text">Mendeteksi...</span>
+            </div>
+          </div>
+          <div class="camera-controls">
+            <button class="btn btn-primary" id="capture-btn">
+              <svg viewBox="0 0 24 24" width="16" height="16"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6" fill="currentColor"/></svg>
+              Capture
+            </button>
+            <button class="btn btn-outline" id="flip-camera-btn">
+              <svg viewBox="0 0 24 24" width="16" height="16"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+              Balik
+            </button>
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div id="preview-wrap" class="preview-wrap">
+          <div class="preview-image-container">
+            <img id="preview-img" src="" alt="Preview foto" />
+          </div>
+          <div class="preview-meta">
+            <span class="preview-filename" id="preview-filename"></span>
+            <div class="preview-btns">
+              <button class="btn btn-primary" id="analyze-btn">Analisis &rarr;</button>
+              <button class="btn btn-outline" id="change-btn">Ganti</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Steps (subtle, secondary) -->
+      <div class="upload-right">
+        <div class="steps-panel">
+          <p class="steps-label">Cara Kerja</p>
+          <div class="steps-list">
+            <div class="step-item">
+              <span class="step-num">01</span>
+              <div class="step-text">
+                <strong>Upload atau Kamera</strong>
+                Pilih foto wajahmu atau ambil langsung dari kamera.
+              </div>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step-item">
+              <span class="step-num">02</span>
+              <div class="step-text">
+                <strong>Analisis AI</strong>
+                Klik analisis dan sistem akan membaca ekspresi wajahmu.
+              </div>
+            </div>
+            <div class="step-divider"></div>
+            <div class="step-item">
+              <span class="step-num">03</span>
+              <div class="step-text">
+                <strong>Dapatkan Rekomendasi</strong>
+                Ceritakan kondisimu dan terima saran aktivitas yang sesuai.
+              </div>
+            </div>
+          </div>
+          <div class="steps-tip">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Pastikan wajah terlihat jelas dan pencahayaan cukup untuk hasil terbaik.
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM: Result -->
+      <div class="upload-bottom">
+        <div class="result-section" id="result-section">
+
+          <div class="result-mood-bar">
+            <div class="result-mood-left">
+              <span class="result-mood-label">Emosi Terdeteksi</span>
+              <span class="result-mood-name" id="result-mood-name"></span>
+              <span class="result-confidence" id="result-confidence"></span>
+            </div>
+          </div>
+
+          <div class="feedback-section">
+            <p class="feedback-label">Ceritakan apa yang kamu rasakan</p>
+            <p class="feedback-hint">Agar rekomendasi yang diberikan lebih sesuai dengan kondisimu saat ini.</p>
+            <textarea class="feedback-textarea" id="feedback-input" placeholder="Contoh: Hari ini saya merasa lelah karena banyak tugas yang menumpuk..."></textarea>
+            <div style="margin-top:12px;">
+              <button class="btn btn-primary" id="feedback-btn">Kirim &rarr;</button>
+            </div>
+          </div>
+
+          <div class="rec-section" id="rec-section">
+            <p class="rec-title">Rekomendasi Aktivitas untuk Kamu</p>
+            <div class="rec-list" id="rec-list"></div>
+            <p class="rec-positive" id="rec-positive"></p>
+          </div>
+
+          <div class="reset-btn-wrap">
+            <button class="btn btn-outline" id="reset-btn">&larr; Coba Foto Lain</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="footer-brand">FaceMood AI</span>
+    <span class="footer-text">Deteksi Emosi Berbasis Kecerdasan Buatan</span>
+  </footer>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>

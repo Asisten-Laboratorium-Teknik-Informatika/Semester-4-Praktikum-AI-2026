@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FaceMood AI — Deteksi Emosi Wajah</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body data-page="home">
+
+  <div class="mood-transition-overlay" id="mood-overlay"></div>
+
+  <nav class="navbar">
+    <a href="/" class="navbar-brand">FaceMood AI</a>
+    <ul class="navbar-links">
+      <li><a href="/" class="active">Home</a></li>
+      <li><a href="/upload">Deteksi</a></li>
+    </ul>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-content">
+      <h1 class="hero-title">
+         Know Your Mood,<br>
+        <span class="accent">Embrace Yourself</span>
+      </h1>
+      <p class="hero-desc">
+        Dengan FaceMood AI, setiap ekspresi wajah dapat menjadi cara baru untuk memahami perasaan dan menemukan aktivitas yang sesuai dengan mood-mu.
+      </p>
+      <div class="hero-actions">
+        <a href="/upload" class="btn btn-primary">Mulai Deteksi &rarr;</a>
+        <a href="#features" class="btn btn-outline">Pelajari Lebih</a>
+      </div>
+    </div>
+
+    <!-- Hero Illustration -->
+    <div class="hero-visual">
+      <svg class="hero-faces-svg" viewBox="0 0 420 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Row 1 -->
+        <!-- Happy face - pink -->
+        <circle cx="90" cy="90" r="62" fill="#F4C2C2" opacity="0.85"/>
+        <path d="M70 95 Q90 115 110 95" stroke="#3B2A22" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <circle cx="76" cy="82" r="3.5" fill="#3B2A22"/>
+        <circle cx="104" cy="82" r="3.5" fill="#3B2A22"/>
+        <path d="M78 60 Q90 48 102 60" stroke="#3B2A22" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <circle cx="68" cy="72" r="4" fill="#e8a0a0" opacity="0.6"/>
+        <circle cx="112" cy="72" r="4" fill="#e8a0a0" opacity="0.6"/>
+        <!-- heart -->
+        <path d="M86 52 C86 49 83 47 81 49 C79 51 81 54 86 57 C91 54 93 51 91 49 C89 47 86 49 86 52Z" fill="#e8a0a0"/>
+
+        <!-- Surprised face - yellow -->
+        <circle cx="230" cy="75" r="55" fill="#F9E4A0" opacity="0.9"/>
+        <ellipse cx="230" cy="95" rx="10" ry="13" stroke="#3B2A22" stroke-width="2.2" fill="none"/>
+        <circle cx="216" cy="70" r="3.5" fill="#3B2A22"/>
+        <circle cx="244" cy="70" r="3.5" fill="#3B2A22"/>
+        <path d="M216 55 Q223 48 230 54" stroke="#3B2A22" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <path d="M244 55 Q237 48 230 54" stroke="#3B2A22" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <!-- curly hair -->
+        <path d="M185 60 Q190 40 200 55 Q205 35 215 50 Q220 30 230 45 Q235 28 245 42 Q252 30 260 48 Q268 35 272 55 Q278 40 280 62" stroke="#3B2A22" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+
+        <!-- Calm face - green -->
+        <circle cx="360" cy="90" r="58" fill="#B8D4B8" opacity="0.85"/>
+        <path d="M342 96 Q360 106 378 96" stroke="#3B2A22" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <path d="M344 82 Q352 78 356 84" stroke="#3B2A22" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <path d="M364 82 Q368 78 376 84" stroke="#3B2A22" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <circle cx="342" cy="76" r="5" fill="#8db88d" opacity="0.5"/>
+        <circle cx="378" cy="76" r="5" fill="#8db88d" opacity="0.5"/>
+        <!-- heart -->
+        <path d="M356 55 C356 52 353 50 351 52 C349 54 351 57 356 60 C361 57 363 54 361 52 C359 50 356 52 356 55Z" fill="#8db88d"/>
+
+        <!-- Row 2 -->
+        <!-- Sad face - blue -->
+        <circle cx="80" cy="230" r="60" fill="#A8C4E0" opacity="0.85"/>
+        <path d="M62 248 Q80 238 98 248" stroke="#3B2A22" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <circle cx="67" cy="220" r="3.5" fill="#3B2A22"/>
+        <circle cx="93" cy="220" r="3.5" fill="#3B2A22"/>
+        <!-- glasses -->
+        <rect x="55" y="212" width="20" height="15" rx="7" stroke="#3B2A22" stroke-width="2" fill="none"/>
+        <rect x="82" y="212" width="20" height="15" rx="7" stroke="#3B2A22" stroke-width="2" fill="none"/>
+        <line x1="75" y1="219" x2="82" y2="219" stroke="#3B2A22" stroke-width="2"/>
+        <!-- tear -->
+        <ellipse cx="67" cy="240" rx="3" ry="5" fill="#7aaad4" opacity="0.7"/>
+
+        <!-- Angry face - orange -->
+        <circle cx="230" cy="235" r="58" fill="#F0B090" opacity="0.85"/>
+        <path d="M212 255 Q230 243 248 255" stroke="#3B2A22" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <path d="M212 218 Q221 212 228 218" stroke="#3B2A22" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        <path d="M232 218 Q239 212 248 218" stroke="#3B2A22" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        <circle cx="218" cy="226" r="3.5" fill="#3B2A22"/>
+        <circle cx="242" cy="226" r="3.5" fill="#3B2A22"/>
+        <circle cx="212" cy="216" r="5" fill="#e09070" opacity="0.5"/>
+        <circle cx="248" cy="216" r="5" fill="#e09070" opacity="0.5"/>
+        <!-- spiky hair -->
+        <path d="M185 210 L195 180 L205 210 L215 175 L225 205 L235 172 L245 205 L255 178 L265 210 L275 185 L280 215" stroke="#3B2A22" stroke-width="2.2" fill="none" stroke-linejoin="round"/>
+
+        <!-- Neutral face - peach -->
+        <circle cx="370" cy="230" r="56" fill="#F5C9A0" opacity="0.85"/>
+        <line x1="352" y1="250" x2="388" y2="250" stroke="#3B2A22" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M354 218 Q362 213 368 219" stroke="#3B2A22" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <path d="M372 218 Q378 213 386 219" stroke="#3B2A22" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <circle cx="358" cy="226" r="3.5" fill="#3B2A22"/>
+        <circle cx="382" cy="226" r="3.5" fill="#3B2A22"/>
+        <!-- wavy hair -->
+        <path d="M320 215 Q330 190 345 210 Q355 185 370 205 Q385 182 400 208 Q412 190 418 220" stroke="#3B2A22" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+
+        <!-- Row 3 -->
+        <!-- Disgust face - sage -->
+        <circle cx="130" cy="385" r="58" fill="#C8D8A8" opacity="0.85"/>
+        <path d="M114 400 Q122 406 130 400 Q138 406 146 400" stroke="#3B2A22" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <path d="M112 372 Q120 366 128 372" stroke="#3B2A22" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        <path d="M132 372 Q140 366 148 372" stroke="#3B2A22" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        <circle cx="118" cy="380" r="3.5" fill="#3B2A22"/>
+        <circle cx="142" cy="380" r="3.5" fill="#3B2A22"/>
+        <!-- heart -->
+        <path d="M126 353 C126 350 123 348 121 350 C119 352 121 355 126 358 C131 355 133 352 131 350 C129 348 126 350 126 353Z" fill="#a0b880"/>
+
+        <!-- Fear face - lavender -->
+        <circle cx="300" cy="390" r="60" fill="#C8B8E0" opacity="0.85"/>
+        <ellipse cx="300" cy="408" rx="9" ry="11" stroke="#3B2A22" stroke-width="2.2" fill="none"/>
+        <circle cx="285" cy="382" r="5" fill="#3B2A22"/>
+        <circle cx="315" cy="382" r="5" fill="#3B2A22"/>
+        <path d="M285 370 Q292 362 300 368 Q308 362 315 370" stroke="#3B2A22" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <circle cx="278" cy="375" r="6" fill="#b0a0d0" opacity="0.4"/>
+        <circle cx="322" cy="375" r="6" fill="#b0a0d0" opacity="0.4"/>
+        <!-- curly hair -->
+        <path d="M255 375 Q260 350 275 368 Q280 345 295 362 Q300 340 310 358 Q318 342 330 360 Q338 345 345 370" stroke="#3B2A22" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+        <!-- floating hearts scattered -->
+        <path d="M155 155 C155 153 153 151 151 153 C149 155 151 158 155 160 C159 158 161 155 159 153 C157 151 155 153 155 155Z" fill="#e8a0a0" opacity="0.7"/>
+        <path d="M310 155 C310 153 308 151 306 153 C304 155 306 158 310 160 C314 158 316 155 314 153 C312 151 310 153 310 155Z" fill="#F9E4A0" opacity="0.7"/>
+        <path d="M40 310 C40 308 38 306 36 308 C34 310 36 313 40 315 C44 313 46 310 44 308 C42 306 40 308 40 310Z" fill="#A8C4E0" opacity="0.7"/>
+        <path d="M400 310 C400 308 398 306 396 308 C394 310 396 313 400 315 C404 313 406 310 404 308 C402 306 400 308 400 310Z" fill="#F0B090" opacity="0.7"/>
+        <path d="M200 470 C200 468 198 466 196 468 C194 470 196 473 200 475 C204 473 206 470 204 468 C202 466 200 468 200 470Z" fill="#C8D8A8" opacity="0.7"/>
+        <path d="M380 470 C380 468 378 466 376 468 C374 470 376 473 380 475 C384 473 386 470 384 468 C382 466 380 468 380 470Z" fill="#C8B8E0" opacity="0.7"/>
+      </svg>
+    </div>
+
+
+
+  </section>
+
+  <section class="features" id="features">
+    <p class="section-label">Cara Kerja</p>
+    <h2 class="section-title">Sederhana, Cepat, dan Akurat</h2>
+
+    <div class="features-grid">
+      <div class="feature-card" style="animation-delay:0s;">
+        <div class="feature-icon-wrap">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <h3 class="feature-title">Upload Foto Wajah</h3>
+        <p class="feature-desc">Unggah foto wajahmu secara langsung. Sistem mendukung format gambar umum seperti JPG dan PNG.</p>
+      </div>
+      <div class="feature-card" style="animation-delay:0.1s;">
+        <div class="feature-icon-wrap">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+        </div>
+        <h3 class="feature-title">Analisis AI Otomatis</h3>
+        <p class="feature-desc">Model CNN yang dilatih menggunakan dataset RAF-DB menganalisis ekspresi wajahmu secara otomatis.</p>
+      </div>
+      <div class="feature-card" style="animation-delay:0.2s;">
+        <div class="feature-icon-wrap">
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <h3 class="feature-title">Rekomendasi Aktivitas</h3>
+        <p class="feature-desc">Dapatkan saran aktivitas yang disesuaikan dengan kondisi emosionalmu untuk memperbaiki suasana hati.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span class="footer-brand">ADITYA FAHREZA     -     IVANA KRSITINA SIAGIAN    -    JELITA CRISNA ZALUKHU</span>
+    <span class="footer-text">Kelompok 3 | Praktikum Kecerdasan Buatan | 2026</span>
+  </footer>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>
