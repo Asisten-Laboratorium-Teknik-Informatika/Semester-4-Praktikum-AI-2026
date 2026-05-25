@@ -1,4 +1,4 @@
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/7aea84a0-36a1-475d-9457-4b70766b4dec" /># NutriSmart AI - Premium Health Dashboard
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/dashboard.png" /># NutriSmart AI - Premium Health Dashboard
 
 NutriSmart AI adalah aplikasi asisten kesehatan personal berbasis web yang mengintegrasikan kalkulasi medis standar gizi dengan algoritma kecerdasan buatan untuk menyediakan rekomendasi menu makanan yang terpersonalisasi secara instan dan aman.
 
