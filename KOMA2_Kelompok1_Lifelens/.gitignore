@@ -1,0 +1,35 @@
+# ─── Virtual Environment ─────────────────────────────────────
+venv/
+.venv/
+
+# ─── Python Cache ────────────────────────────────────────────
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.pytest_cache/
+.cache/
+logs/
+
+# ─── Environment & Secrets ───────────────────────────────────
+.env
+.env.local
+
+# ─── Data (terlalu besar untuk git) ──────────────────────────
+Data/raw/
+CHAT/
+Notebooks/
+Output/
+backup_web_demo/
+
+# ─── OS Files ────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ─── Node ────────────────────────────────────────────────────
+node_modules/
+frontend/node_modules/
+
+# ─── Build artifacts (bisa di-generate ulang) ────────────────
+frontend/dist/
+
+# NOTE: ml_models/*.pkl HARUS ikut ke git (model production)
