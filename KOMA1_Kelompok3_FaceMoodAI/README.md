@@ -66,8 +66,7 @@ KOMA1_Kelompok3_FaceMoodAI/
 │
 ├── static/                      # File CSS dan JavaScript
 ├── templates/                   # File HTML halaman web
-├── model/
-│   └── facemood_raf_model.h5    # Model CNN yang telah dilatih
+├── facemood_raf_model.h5        # Model CNN yang telah dilatih
 ├── app.py                       # File utama Flask
 ├── requirements.txt             # Daftar dependensi
 └── README.md
