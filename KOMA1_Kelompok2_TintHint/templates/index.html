@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+
+<html lang="id">
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>TintHint — Kenali Undertone Kulitmu</title>
+
+  <link rel="stylesheet" href="/static/style.css" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+</head>
+
+<body>
+
+
+
+  <nav class="navbar">
+
+    <div class="nav-logo">
+
+      <span class="logo-icon"></span>
+
+      <span class="logo-text">TintHint</span>
+
+    </div>
+
+    <div class="nav-links">
+
+      <a href="#hero">Home</a>
+
+      <a href="#upload-section">Analisa</a>
+
+      <a href="#about">About</a>
+
+    </div>
+
+    <button class="hamburger" id="hamburger">
+
+      <i class="fas fa-bars"></i>
+
+    </button>
+
+  </nav>
+
+
+
+  <section class="hero" id="hero">
+
+    <div class="hero-content">
+
+      <div class="hero-badge"> AI-Powered Skin Analysis</div>
+
+      <h1 class="hero-title">Kenali<br/><span class="gradient-text">Undertone Kulitmu</span></h1>
+
+      <p class="hero-subtitle">Upload foto wajahmu dan biarkan TintHint menganalisa undertone kulit kamu — Warm, Cool, atau Neutral — untuk rekomendasi warna yang paling cocok!</p>
+
+      <a href="#upload-section" class="btn-primary" id="btnMulaiHero">
+
+        <i class="fas fa-camera"></i> Mulai Analisa
+
+      </a>
+
+    </div>
+
+    <div class="hero-image">
+
+      <div class="floating-card card-warm">
+
+        <span></span>
+
+        <p>Warm</p>
+
+      </div>
+
+      <div class="floating-card card-cool">
+
+        <span></span>
+
+        <p>Cool</p>
+
+      </div>
+
+      <div class="floating-card card-neutral">
+
+        <span></span>
+
+        <p>Neutral</p>
+
+      </div>
+
+      <div class="hero-circle"></div>
+
+    </div>
+
+  </section>
+
+
+
+  <section class="how-it-works" id="how">
+
+    <h2 class="section-title">Cara Kerja TintHint</h2>
+
+    <div class="steps-grid">
+
+      <div class="step-card">
+
+        <div class="step-icon"></div>
+
+        <h3>Upload Foto</h3>
+
+        <p>Ambil foto wajah yang jelas dengan pencahayaan natural</p>
+
+      </div>
+
+      <div class="step-arrow">→</div>
+
+      <div class="step-card">
+
+        <div class="step-icon"></div>
+
+        <h3>AI Menganalisa</h3>
+
+        <p>Model MobileNetV2 menganalisa undertone kulitmu secara akurat</p>
+
+      </div>
+
+      <div class="step-arrow">→</div>
+
+      <div class="step-card">
+
+        <div class="step-icon"></div>
+
+        <h3>Dapat Rekomendasi</h3>
+
+        <p>Terima rekomendasi warna & makeup yang cocok untukmu</p>
+
+      </div>
+
+    </div>
+
+    <div style="text-align:center; margin-top:40px;">
+
+      <a href="#upload-section" class="btn-primary" id="btnMulaiHow">
+
+        <i class="fas fa-magic"></i> Coba Sekarang
+
+      </a>
+
+    </div>
+
+  </section>
+
+
+
+  <section class="upload-section" id="upload-section">
+
+    <div class="upload-container">
+
+      <h2 class="section-title">Analisa Undertone Kulitmu</h2>
+
+      <p class="section-subtitle">Upload foto wajah yang terang dan tidak blur untuk hasil terbaik</p>
+
+
+
+      <div class="upload-card" id="uploadCard">
+
+
+
+        <div class="upload-area" id="uploadArea">
+
+          <div class="upload-icon"></div>
+
+          <p class="upload-text">Drag & drop foto di sini</p>
+
+          <p class="upload-subtext">atau</p>
+
+          <label for="fileInput" class="btn-upload">
+
+            <i class="fas fa-upload"></i> Pilih Foto
+
+          </label>
+
+          <input type="file" id="fileInput" accept="image/*" hidden/>
+
+          <p class="upload-hint">PNG, JPG, JPEG — Maks. 10MB</p>
+
+        </div>
+
+
+
+        <div class="preview-area" id="previewArea" style="display:none;">
+
+          <img id="previewImg" src="" alt="Preview foto kamu"/>
+
+          <button class="btn-change" id="changeBtn" type="button">
+
+            <i class="fas fa-redo"></i> Ganti Foto
+
+          </button>
+
+        </div>
+
+
+
+        <button class="btn-analyze" id="analyzeBtn" type="button" disabled>
+
+          <i class="fas fa-magic"></i> Analisa Sekarang
+
+        </button>
+
+
+
+      </div>
+
+
+
+      <div class="loading-state" id="loadingState" style="display:none;">
+
+        <div class="loading-spinner"></div>
+
+        <p>Sedang menganalisa undertone kulitmu...</p>
+
+        <p class="loading-sub">Mohon tunggu sebentar </p>
+
+      </div>
+
+
+
+      <div class="error-state" id="errorState" style="display:none;">
+
+        <div class="error-icon"></div>
+
+        <p id="errorMsg">Terjadi kesalahan. Coba lagi ya!</p>
+
+        <button class="btn-retry" id="errorRetryBtn" type="button">
+
+          <i class="fas fa-redo"></i> Coba Lagi
+
+        </button>
+
+      </div>
+
+
+
+      <div class="result-section" id="resultSection" style="display:none;">
+
+        <div class="result-card" id="resultCard">
+
+
+
+          <div class="result-header">
+
+            <div class="result-emoji" id="resultEmoji"></div>
+
+            <div>
+
+              <p class="result-label">Undertone kulitmu adalah</p>
+
+              <h2 class="result-undertone" id="resultUndertone"></h2>
+
+              <p class="result-confidence" id="resultConfidence"></p>
+
+            </div>
+
+          </div>
+
+
+
+          <p class="result-description" id="resultDescription"></p>
+
+
+
+          <div class="prob-section">
+
+            <h4> Distribusi Probabilitas</h4>
+
+            <div class="prob-bars" id="probBars"></div>
+
+          </div>
+
+
+
+          <div class="colors-section">
+
+            <h4> Palet Warna yang Cocok</h4>
+
+            <div class="color-swatches" id="colorSwatches"></div>
+
+            <div class="color-names" id="colorNames"></div>
+
+          </div>
+
+
+
+          <div class="avoid-section">
+
+            <h4> Warna yang Sebaiknya Dihindari</h4>
+
+            <div class="avoid-tags" id="avoidTags"></div>
+
+          </div>
+
+
+
+          <div class="makeup-section">
+
+            <h4> Tips Makeup</h4>
+
+            <p id="makeupTip"></p>
+
+          </div>
+
+
+
+          <button class="btn-retry" id="retryBtn" type="button">
+
+            <i class="fas fa-redo"></i> Analisa Foto Lain
+
+          </button>
+
+
+
+        </div>
+
+      </div>
+
+
+
+    </div>
+
+  </section>
+
+
+
+  <section class="about" id="about">
+
+    <div class="about-content">
+
+      <h2 class="section-title">Tentang TintHint</h2>
+
+      <p>TintHint adalah aplikasi berbasis kecerdasan buatan yang dikembangkan untuk membantu kamu mengenali undertone kulit wajah. Dibangun menggunakan model deep learning <strong>MobileNetV2</strong> yang dilatih dengan dataset <strong>FairFace</strong> sebanyak 159.000+ gambar.</p>
+
+      <div class="about-stats">
+
+        <div class="stat">
+
+          <h3>159K+</h3>
+
+          <p>Data Training</p>
+
+        </div>
+
+        <div class="stat">
+
+          <h3>~71%</h3>
+
+          <p>Akurasi Model</p>
+
+        </div>
+
+        <div class="stat">
+
+          <h3>3</h3>
+
+          <p>Kategori Undertone</p>
+
+        </div>
+
+      </div>
+
+      <div style="text-align:center; margin-top:40px;">
+
+        <a href="#upload-section" class="btn-primary">
+
+          <i class="fas fa-camera"></i> Coba TintHint
+
+        </a>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <footer class="footer">
+
+    <div class="footer-logo"> TintHint</div>
+
+    <p>Kenali undertone kulitmu dengan teknologi AI</p>
+
+    <p class="footer-tech">Deep Learning · MobileNetV2 · FairFace Dataset</p>
+
+  </footer>
+
+
+
+  <script src="/static/main.js"></script>
+
+
+
+  <script>
+
+
+
+    const fileInput     = document.getElementById('fileInput');
+
+    const uploadArea    = document.getElementById('uploadArea');
+
+    const previewArea   = document.getElementById('previewArea');
+
+    const previewImg    = document.getElementById('previewImg');
+
+    const analyzeBtn    = document.getElementById('analyzeBtn');
+
+    const changeBtn     = document.getElementById('changeBtn');
+
+    const loadingState  = document.getElementById('loadingState');
+
+    const resultSection = document.getElementById('resultSection');
+
+    const errorState    = document.getElementById('errorState');
+
+    const errorMsg      = document.getElementById('errorMsg');
+
+    const uploadCard    = document.getElementById('uploadCard');
+
+
+
+    let selectedFile = null;
+
+
+
+    document.querySelectorAll('a[href="#upload-section"]').forEach(btn => {
+
+      btn.addEventListener('click', (e) => {
+
+        e.preventDefault();
+
+        document.getElementById('upload-section').scrollIntoView({ behavior: 'smooth' });
+
+      });
+
+    });
+
+
+
+    uploadArea.addEventListener('dragover', (e) => {
+
+      e.preventDefault();
+
+      uploadArea.classList.add('dragover');
+
+    });
+
+
+
+    uploadArea.addEventListener('dragleave', () => {
+
+      uploadArea.classList.remove('dragover');
+
+    });
+
+
+
+    uploadArea.addEventListener('drop', (e) => {
+
+      e.preventDefault();
+
+      uploadArea.classList.remove('dragover');
+
+      const file = e.dataTransfer.files[0];
+
+      if (file && file.type.startsWith('image/')) {
+
+        handleFile(file);
+
+      } else {
+
+        showError('File harus berupa gambar (JPG/PNG)');
+
+      }
+
+    });
+
+
+
+    fileInput.addEventListener('change', (e) => {
+
+      if (e.target.files[0]) handleFile(e.target.files[0]);
+
+    });
+
+
+
+    uploadArea.addEventListener('click', () => {
+
+      fileInput.click();
+
+    });
+
+
+
+    function handleFile(file) {
+
+      if (file.size > 10 * 1024 * 1024) {
+
+        showError('Ukuran file terlalu besar. Maks. 10MB ya!');
+
+        return;
+
+      }
+
+      selectedFile = file;
+
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+
+        previewImg.src = e.target.result;
+
+        uploadArea.style.display    = 'none';
+
+        previewArea.style.display   = 'block';
+
+        analyzeBtn.disabled         = false;
+
+        resultSection.style.display = 'none';
+
+        errorState.style.display    = 'none';
+
+        uploadCard.style.display    = 'block';
+
+      };
+
+      reader.readAsDataURL(file);
+
+    }
+
+
+
+    changeBtn.addEventListener('click', () => {
+
+      resetUpload();
+
+    });
+
+
+
+    analyzeBtn.addEventListener('click', async () => {
+
+      if (!selectedFile) return;
+
+      await doAnalyze();
+
+    });
+
+
+
+    document.getElementById('retryBtn').addEventListener('click', () => {
+
+      resetAll();
+
+      document.getElementById('upload-section').scrollIntoView({ behavior: 'smooth' });
+
+    });
+
+
+
+    document.getElementById('errorRetryBtn').addEventListener('click', () => {
+
+      resetAll();
+
+    });
+
+
+
+    async function doAnalyze() {
+
+      const formData = new FormData();
+
+      formData.append('image', selectedFile);
+
+
+
+      uploadCard.style.display    = 'none';
+
+      loadingState.style.display  = 'flex';
+
+      resultSection.style.display = 'none';
+
+      errorState.style.display    = 'none';
+
+
+
+      try {
+
+        const response = await fetch('/predict', {
+
+          method: 'POST',
+
+          body: formData
+
+        });
+
+
+
+        const data = await response.json();
+
+
+
+        loadingState.style.display = 'none';
+
+
+
+        if (data.error) {
+
+          showError(data.error);
+
+          return;
+
+        }
+
+
+
+        showResult(data);
+
+
+
+      } catch (err) {
+
+        loadingState.style.display = 'none';
+
+        showError('Gagal terhubung ke server. Pastikan Flask berjalan!');
+
+      }
+
+    }
+
+
+
+    function showResult(data) {
+
+      document.getElementById('resultEmoji').textContent      = data.emoji;
+
+      document.getElementById('resultUndertone').textContent  = capitalize(data.undertone);
+
+      document.getElementById('resultConfidence').textContent = `Tingkat kepercayaan: ${data.confidence}%`;
+
+      document.getElementById('resultDescription').textContent = data.description;
+
+      document.getElementById('makeupTip').textContent        = data.makeup;
+
+
+
+      const card = document.getElementById('resultCard');
+
+      card.className = 'result-card result-' + data.undertone;
+
+
+
+      const probBars = document.getElementById('probBars');
+
+      probBars.innerHTML = '';
+
+      const order = ['warm', 'neutral', 'cool'];
+
+      order.forEach(label => {
+
+        const val = data.probabilities[label] || 0;
+
+        probBars.innerHTML += `
+
+          <div class="prob-bar-item">
+
+            <div class="prob-bar-label">
+
+              <span>${capitalize(label)}</span>
+
+              <span>${val}%</span>
+
+            </div>
+
+            <div class="prob-bar-track">
+
+              <div class="prob-bar-fill prob-${label}" style="width:0%" data-width="${val}%"></div>
+
+            </div>
+
+          </div>`;
+
+      });
+
+
+
+      setTimeout(() => {
+
+        document.querySelectorAll('.prob-bar-fill').forEach(el => {
+
+          el.style.width = el.dataset.width;
+
+        });
+
+      }, 100);
+
+
+
+      const swatches = document.getElementById('colorSwatches');
+
+      const names    = document.getElementById('colorNames');
+
+      swatches.innerHTML = '';
+
+      names.innerHTML    = '';
+
+      data.hex.forEach((hex, i) => {
+
+        swatches.innerHTML += `<div class="swatch" style="background:${hex}" title="${data.colors[i]}"></div>`;
+
+        names.innerHTML    += `<span class="color-tag">${data.colors[i]}</span>`;
+
+      });
+
+
+
+      const avoidTags = document.getElementById('avoidTags');
+
+      avoidTags.innerHTML = data.avoid.map(c => `<span class="avoid-tag">✗ ${c}</span>`).join('');
+
+
+
+      resultSection.style.display = 'block';
+
+      resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    }
+
+
+
+    function showError(msg) {
+
+      errorMsg.textContent      = msg;
+
+      errorState.style.display  = 'flex';
+
+      uploadCard.style.display  = 'none';
+
+      loadingState.style.display = 'none';
+
+    }
+
+
+
+    function resetUpload() {
+
+      selectedFile          = null;
+
+      fileInput.value       = '';
+
+      uploadArea.style.display  = 'block';
+
+      previewArea.style.display = 'none';
+
+      analyzeBtn.disabled       = true;
+
+      uploadCard.style.display  = 'block';
+
+    }
+
+
+
+    function resetAll() {
+
+      resetUpload();
+
+      resultSection.style.display = 'none';
+
+      errorState.style.display    = 'none';
+
+      uploadCard.style.display    = 'block';
+
+    }
+
+
+
+    function capitalize(str) {
+
+      return str.charAt(0).toUpperCase() + str.slice(1);
+
+    }
+
+
+
+    const hamburger = document.getElementById('hamburger');
+
+    const navLinks  = document.querySelector('.nav-links');
+
+    hamburger.addEventListener('click', () => {
+
+      navLinks.classList.toggle('open');
+
+    });
+
+  </script>
+
+
+
+</body>
+
+</html>
